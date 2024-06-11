@@ -11,7 +11,7 @@ const Register = () => {
             <Stack spacing={2} sx={{ mb: 5, position: "relative", ...(isTablet && { paddingBottom: 6 }) }}>
 
                 <Typography variant='h4'>
-                    Get Stated With ZChat
+                    Get Started With ZChat
                 </Typography>
 
                 <Stack direction={"row"} spacing={0.5}>

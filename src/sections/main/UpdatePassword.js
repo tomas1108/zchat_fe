@@ -47,11 +47,11 @@ const ChangePasswordForm = ({ handleClose }) => {
 
   const {
     reset,
-    watch,
+  
     setError,
-    setValue,
+
     handleSubmit,
-    formState: { isSubmitting, isValid },
+    formState: {  },
   } = methods;
 
   const onSubmit = async (data) => {

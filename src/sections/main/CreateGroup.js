@@ -4,7 +4,7 @@ import {
   DialogContent,
   Slide,
   Stack,
-  Typography,
+
   Button,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
@@ -89,17 +89,17 @@ const CreateGroupForm = ({ handleClose }) => {
     defaultValues,
   });
 
-  const emitPromise = (event, ...args) => {
-    return new Promise((resolve, reject) => {
-      socket.emit(event, ...args, (response) => {
-        if (response.success) {
-          resolve(response);
-        } else {
-          reject(new Error("Error: " + response.error || response.message));
-        }
-      });
-    });
-  };
+  // const emitPromise = (event, ...args) => {
+  //   return new Promise((resolve, reject) => {
+  //     socket.emit(event, ...args, (response) => {
+  //       if (response.success) {
+  //         resolve(response);
+  //       } else {
+  //         reject(new Error("Error: " + response.error || response.message));
+  //       }
+  //     });
+  //   });
+  // };
 
   const onSubmit = async (data) => {
     handleClose();
@@ -143,19 +143,19 @@ const CreateGroupForm = ({ handleClose }) => {
         type: "notification",
       };
 
-      socket.emit("create-group-conversation", memberList, groupInfor, (response) => {
-        if (response.success) {
-          let connectionsLocal = {};
-          memberList.forEach((member) => {
-            dispatch(ResetCurrentMessages());
-            dispatch(UpdateGroupCurrentConversation({ ...groupInfor, members: memberList }));
+      // socket.emit("create-group-conversation", memberList, groupInfor, (response) => {
+      //   if (response.success) {
+      //     let connectionsLocal = {};
+      //     memberList.forEach((member) => {
+      //       dispatch(ResetCurrentMessages());
+      //       dispatch(UpdateGroupCurrentConversation({ ...groupInfor, members: memberList }));
           
-          });
-          console.log("Group conversation created successfully.");
-        } else {
-          console.error("Error:", response.error);
-        }
-      });
+      //     });
+      //     console.log("Group conversation created successfully.");
+      //   } else {
+      //     console.error("Error:", response.error);
+      //   }
+      // });
 
       socket.emit(
         "add-message",
