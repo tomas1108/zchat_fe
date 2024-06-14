@@ -55,8 +55,12 @@ const ResulSearchList = ({ search }) => {
           <SimpleBarStyle>
             {search !== "" &&
               users
+                // .filter((item) => {
+                //   return item.email.includes(search);
+                // })
                 .filter((item) => {
-                  return item.email.includes(search);
+                  const fullName = `${item.firstName} ${item.lastName}`.toLowerCase();
+                  return fullName.includes(search.toLowerCase());
                 })
                 .map((el, idx) => {
                   return <UserElement key={idx} {...el} />;
