@@ -141,30 +141,30 @@ const UsersList = () => {
 const FriendsList = () => {
   const dispatch = useDispatch();
   const { friends } = useSelector((state) => state.app);
-  const user_id = localStorage.getItem("user_id");
+  const user_id = localStorage.getItem('user_id');
+
   useEffect(() => {
-    dispatch(FetchFriends( user_id));
-  }, [dispatch]);
+    dispatch(FetchFriends(user_id));
+  }, [dispatch, user_id]);
 
   return (
     <>
-    
-    <ScrollbarNormal>
-      {friends.map((el, idx) => {
-        return <FriendElement key={idx} {...el} />;
-     
-      })}
-         </ScrollbarNormal>
+      <ScrollbarNormal>
+        {friends.length > 0 ? (
+          friends.map((el, idx) => <FriendElement key={idx} {...el} />)
+        ) : (
+          <p style={{ opacity: 0.5 , textAlign:"center"}}>NO FRIEND FOUND</p>
+        )}
+      </ScrollbarNormal>
     </>
   );
 };
-
 const RequestsList = () => {
   const dispatch = useDispatch();
   const { friendRequests } = useSelector((state) => state.app);
   const user_id = localStorage.getItem("user_id");
   useEffect(() => {
-    dispatch(FetchFriendRequests(user_id));
+    dispatch(FetchFriendRequests());
   }, [dispatch] );
   if (!Array.isArray(friendRequests)) {
     return <div>Loading...</div>; // Hoặc bất kỳ chỉ báo tải nào khác
@@ -172,7 +172,7 @@ const RequestsList = () => {
   return (
     <>
       {friendRequests.map((el, idx) => {
-        return <FriendRequestElement  key={idx} {...el} />;
+        return <FriendRequestElement  key={idx} {...el.sender} id={el._id} />;
       })}
     </>
   );

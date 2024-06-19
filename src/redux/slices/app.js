@@ -212,19 +212,19 @@ export function FetchFriends(user_id) {
         dispatch(slice.actions.updateFriends({ friends: response.data.data }));
         dispatch(slice.actions.updateAllUsers({ users: response.data.data }));
       })
+      
       .catch((err) => {
         console.log(err);
       });
   };
 }
-export function FetchFriendRequests(user_id) {
+export function FetchFriendRequests() {
   return async (dispatch, getState) => {
     await axios
       .get(
         "/user/get-requests",
-        
+
         {
-          params: { _id: user_id },
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${getState().auth.token}`,
@@ -236,14 +236,12 @@ export function FetchFriendRequests(user_id) {
         dispatch(
           slice.actions.updateFriendRequests({ requests: response.data.data })
         );
-        console.log(getState().app.friendRequests); // Kiểm tra giá trị friendRequests sau khi đã cập nhật
       })
       .catch((err) => {
         console.log(err);
       });
   };
 }
-
 
 export const SelectConversation = ({ room_id }) => {
   
@@ -310,6 +308,26 @@ export const FetchCallLogs = () => {
 //     }
 //   };
 // };
+
+export const UpdateRequestStatus = (user_id, status) => {
+  return async (dispatch, getState) => {
+    try {
+      const response = await axios.post(
+        "/user/update-request-status",
+        { _id: user_id, status },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getState().auth.token}`,
+          },
+        }
+      );
+      console.log(response);
+    } catch (error) {    
+      console.log(error);
+    }
+  }
+};
 
 export const UpdateUserProfile = (user_id, formData) => {
   return async (dispatch, getState) => {
