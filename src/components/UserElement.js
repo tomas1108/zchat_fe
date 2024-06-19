@@ -14,8 +14,7 @@ import { socket } from "../socket";
 import { FetchDirectConversations } from "../redux/slices/conversation";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-
-
+import { DeleteFriend } from "../redux/slices/app";
 const user_id = window.localStorage.getItem("user_id");
 const StyledChatBox = styled(Box)(({ theme }) => ({
   "&:hover": {
@@ -126,8 +125,8 @@ const UserElement = ({ img, firstName, lastName, online, _id, email  }) => {
           </Stack>
         </Stack>
         <Stack direction={"row"} spacing={2} alignItems={"center"}>
-          <Button onClick={handleSendRequest}>
-            {isRequestSent ? "Cancel " : "Send Request"}
+          <Button onClick={handleSendRequest} >
+            {isRequestSent ? "Cancel Request" : "Send Request"}
           </Button>
         </Stack>
       </Stack>
@@ -138,19 +137,21 @@ const UserElement = ({ img, firstName, lastName, online, _id, email  }) => {
 const FriendRequestElement = ({
   avatar,
   online,
-  _id,
   firstName,
   lastName,
+  id
 }) => {
   const theme = useTheme();
   const name = `${firstName} ${lastName}`;  
 
   const handleAcceptRequest = () => {
-    socket.emit("accept_request", { to: _id, from: user_id });
+    socket.emit("accept_request", { request_id: id });
   };
 
   const handleDeclineRequest = () => {
-    socket.emit("decline_request", { to: _id, from: user_id });
+    socket.emit("decline_request",{ request_id: id });
+
+    
   };
 
   return (
@@ -199,18 +200,92 @@ const FriendRequestElement = ({
 
 // FriendElement
 
-const FriendElement = ({
-  avatar,
-  name,
-  online,
-  _id,
-}) => {
+// const FriendElement = ({
+//   avatar,
+//   online,
+//   _id,
+//   firstName,
+//   lastName,
+// }) => {
+//   const theme = useTheme();
+//   const dispatch = useDispatch();
+//   const name = `${firstName} ${lastName}`;
+
+//   return (
+
+//     <StyledChatBox
+//       sx={{
+//         width: "100%",
+//         borderRadius: 1,
+//         backgroundColor: theme.palette.background.paper,
+//       }}
+//       p={2}
+//     >
+//       <Stack
+//         direction="row"
+//         alignItems={"center"}
+//         justifyContent="space-between"
+
+//       >
+//         <Stack direction="row" alignItems={"center"} spacing={2}>
+//           {" "}
+//           {online ? (
+//             <StyledBadge
+//               overlap="circular"
+//               anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+//               variant="dot"
+//             >
+//               <Avatar alt={name} src={avatar} />
+//             </StyledBadge>
+//           ) : (
+//             <Avatar alt={name} src={avatar} />
+//           )}
+//           <Stack spacing={0.3}>
+//             <Typography variant="subtitle2">{name}</Typography>
+//           </Stack>
+//         </Stack>
+//         <Stack direction={"row"} spacing={2} alignItems={"center"}>
+//           <IconButton
+//             onClick={() => {
+//               // start a new conversation
+//               socket.emit("start_conversation", { to: _id, from: user_id, avatar: avatar, name: name }, (data) => {
+//                 dispatch(FetchDirectConversations({ conversations: data }));
+//               })
+//               // socket.emit("get_direct_conversations", {user_id} , (data) => {
+//               //   console.log("Get direct" ,data); // this data is the list of conversations
+//               //   // dispatch action
+//               //   dispatch(FetchDirectConversations({ conversations: data }));
+//               // });
+//             }}
+
+//           >
+//             <Chat />
+//           </IconButton>
+            
+//           <IconButton>
+//             <Prohibit />
+//           </IconButton>
+
+
+
+//         </Stack>
+//       </Stack>
+//     </StyledChatBox>
+
+//   );
+// };
+const FriendElement = ({ avatar, online, _id, firstName, lastName }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
-  const Username = name;
+  const name = `${firstName} ${lastName}`;
+  const user_id = localStorage.getItem("user_id"); // Lấy user_id từ localStorage
+  const handleDeleteFriend = () => {
+    if (window.confirm(`Are you sure you want to delete ${name} from your friends?`)) {
+      dispatch(DeleteFriend(_id)); // Dispatch hành động xóa bạn bè
+    }
+  };
 
   return (
-
     <StyledChatBox
       sx={{
         width: "100%",
@@ -219,14 +294,8 @@ const FriendElement = ({
       }}
       p={2}
     >
-      <Stack
-        direction="row"
-        alignItems={"center"}
-        justifyContent="space-between"
-
-      >
+      <Stack direction="row" alignItems={"center"} justifyContent="space-between">
         <Stack direction="row" alignItems={"center"} spacing={2}>
-          {" "}
           {online ? (
             <StyledBadge
               overlap="circular"
@@ -239,39 +308,25 @@ const FriendElement = ({
             <Avatar alt={name} src={avatar} />
           )}
           <Stack spacing={0.3}>
-            <Typography variant="subtitle2">{Username}</Typography>
+            <Typography variant="subtitle2">{name}</Typography>
           </Stack>
         </Stack>
         <Stack direction={"row"} spacing={2} alignItems={"center"}>
           <IconButton
             onClick={() => {
-              // start a new conversation
-              socket.emit("start_conversation", { to: _id, from: user_id, avatar: avatar, name: name }, (data) => {
+              socket.emit("start_conversation", { to: _id, from: user_id, avatar, name }, (data) => {
                 dispatch(FetchDirectConversations({ conversations: data }));
-              })
-              // socket.emit("get_direct_conversations", {user_id} , (data) => {
-              //   console.log("Get direct" ,data); // this data is the list of conversations
-              //   // dispatch action
-              //   dispatch(FetchDirectConversations({ conversations: data }));
-              // });
+              });
             }}
-
           >
             <Chat />
           </IconButton>
-          <IconButton>
-            <Phone />
-          </IconButton>
-          <IconButton>
+          <IconButton onClick={handleDeleteFriend}>
             <Prohibit />
           </IconButton>
-
-
-
         </Stack>
       </Stack>
     </StyledChatBox>
-
   );
 };
 

@@ -5,15 +5,15 @@ import { v4 } from "uuid";
 import { S3_BUCKET_NAME } from "../../config";
 
 
- // ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 
 
 const initialState = {
   user: {
-    name : null,
-    email : null,
-    avatar : null,
-   
+    name: null,
+    email: null,
+    avatar: null,
+
   },
   sideBar: {
     open: false,
@@ -66,7 +66,7 @@ const slice = createSlice({
       state.snackbar.message = action.payload.message;
     },
     closeSnackBar(state) {
- 
+
       state.snackbar.open = false;
       state.snackbar.message = null;
     },
@@ -102,34 +102,34 @@ export const closeSnackBar = () => async (dispatch, getState) => {
 
 export const showSnackbar =
   ({ severity, message }) =>
-  async (dispatch, getState) => {
-    dispatch(
-      slice.actions.openSnackBar({
-        message,
-        severity,
-      })
-    );
+    async (dispatch, getState) => {
+      dispatch(
+        slice.actions.openSnackBar({
+          message,
+          severity,
+        })
+      );
 
-    setTimeout(() => {
-      dispatch(slice.actions.closeSnackBar());
-    }, 4000);
-  };
+      setTimeout(() => {
+        dispatch(slice.actions.closeSnackBar());
+      }, 4000);
+    };
 
 
-  export const showSnackbarTop = ({ severity, message }) => async (dispatch, getState) => {
-    dispatch(
-      slice.actions.openSnackBar({
-        message,
-        severity,
-        anchorOrigin: { vertical: 'top', horizontal: 'right' }, // Đặt anchorOrigin
-      })
-    );
-  
-    setTimeout(() => {
-      dispatch(slice.actions.closeSnackBar());
-    }, 4000);
-  };
-  
+export const showSnackbarTop = ({ severity, message }) => async (dispatch, getState) => {
+  dispatch(
+    slice.actions.openSnackBar({
+      message,
+      severity,
+      anchorOrigin: { vertical: 'top', horizontal: 'right' }, // Đặt anchorOrigin
+    })
+  );
+
+  setTimeout(() => {
+    dispatch(slice.actions.closeSnackBar());
+  }, 4000);
+};
+
 
 export function ToggleSidebar() {
   return async (dispatch, getState) => {
@@ -192,7 +192,7 @@ export function FetchAllUsers() {
         console.log(err);
       });
   };
-} 
+}
 export function FetchFriends(user_id) {
   return async (dispatch, getState) => {
     await axios
@@ -212,10 +212,29 @@ export function FetchFriends(user_id) {
         dispatch(slice.actions.updateFriends({ friends: response.data.data }));
         dispatch(slice.actions.updateAllUsers({ users: response.data.data }));
       })
-      
+
       .catch((err) => {
         console.log(err);
       });
+  };
+}
+export function DeleteFriend(friendId) {
+  return async (dispatch, getState) => {
+    const { auth } = getState();
+    try {
+      const response = await axios
+        .post(
+          "/user/delete-friends",
+          {
+            friendId: friendId,
+          }, {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        });
+    } catch (error) {
+      console.error('Error deleting friend:', error);
+    }
   };
 }
 export function FetchFriendRequests() {
@@ -244,10 +263,10 @@ export function FetchFriendRequests() {
 }
 
 export const SelectConversation = ({ room_id }) => {
-  
+
   return async (dispatch, getState) => {
-      dispatch(slice.actions.selectConversation({ room_id }));
-    
+    dispatch(slice.actions.selectConversation({ room_id }));
+
   };
 };
 
@@ -323,7 +342,7 @@ export const UpdateRequestStatus = (user_id, status) => {
         }
       );
       console.log(response);
-    } catch (error) {    
+    } catch (error) {
       console.log(error);
     }
   }
@@ -344,7 +363,7 @@ export const UpdateUserProfile = (user_id, formData) => {
           },
         }
       );
-      
+
       dispatch(
         showSnackbar({ severity: "success", message: response.data.message })
       );
@@ -356,7 +375,7 @@ export const UpdateUserProfile = (user_id, formData) => {
       dispatch(showSnackbar({ severity: "error", message: errorMessage }));
     }
   };
-}; 
+};
 
 
 

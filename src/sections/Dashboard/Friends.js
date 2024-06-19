@@ -161,18 +161,18 @@ const FriendsList = () => {
 };
 const RequestsList = () => {
   const dispatch = useDispatch();
+
   const { friendRequests } = useSelector((state) => state.app);
-  const user_id = localStorage.getItem("user_id");
+
+  console.log("FR", friendRequests);
   useEffect(() => {
     dispatch(FetchFriendRequests());
-  }, [dispatch] );
-  if (!Array.isArray(friendRequests)) {
-    return <div>Loading...</div>; // Hoặc bất kỳ chỉ báo tải nào khác
-  }
+  }, []);
+
   return (
     <>
       {friendRequests.map((el, idx) => {
-        return <FriendRequestElement  key={idx} {...el.sender} id={el._id} />;
+        return <FriendRequestElement key={idx} {...el.sender} id={el._id} />;
       })}
     </>
   );

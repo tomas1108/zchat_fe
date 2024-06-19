@@ -12,6 +12,7 @@ import {
   AddDirectMessage,
 } from "../../redux/slices/conversation";
 
+
 var pieSocket;
 
 const DashboardLayout = () => {
@@ -32,7 +33,7 @@ const DashboardLayout = () => {
       window.onload = function () {
          if (!window.location.hash) {
           window.location = window.location + "#loaded";
-          window.location.reload();
+       
          }
         // Đánh dấu trang đã được tải một lần
       }
