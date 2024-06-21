@@ -11,9 +11,10 @@ import { useSelector } from "react-redux";
 import StarredMessages from "../../sections/Dashboard/StarredMessages";
 import Media from "../../sections/Dashboard/SharedMessages";
 
-import Pic1 from "../../assets/Images/pic1.png";
-import Pic2 from "../../assets/Images/pic2.png";
-import wellcome from "../../assets/Images/welcome.png";
+import Pic3 from "../../assets/Images/pic3.png";
+import Pic4 from "../../assets/Images/pic4.png";
+import Pic5 from "../../assets/Images/pic6.png";
+
 
 const GeneralApp = () => {
  /*  const [searchParams] = useSearchParams();
@@ -24,12 +25,12 @@ const GeneralApp = () => {
 
 
   const [imageIndex, setImageIndex] = useState(0);
-  const images = [Pic1, Pic2, wellcome]; // Thay đổi đường dẫn đến hình ảnh tại đây
+  const images = [Pic3, Pic4, Pic5]; // Thay đổi đường dẫn đến hình ảnh tại đây
 
   useEffect(() => {
     const interval = setInterval(() => {
       setImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 3000); // Thay đổi hình sau mỗi 3 giây
+    }, 4000); // Thay đổi hình sau mỗi 3 giây
 
     return () => clearInterval(interval);
   }, [images.length]);

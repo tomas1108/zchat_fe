@@ -189,17 +189,19 @@ const CreateGroupForm = ({ handleClose }) => {
 
   const renderFriendList = () => {
     const list = search === "" ? friends : filteredOptions;
+    
     return list.map((friend) => {
       const isSelected = selectedMembers.some(
         (member) => member._id === friend._id
       );
       if (isSelected) return null;
+
       return (
         <MemberElement
           key={friend._id}
-          name={friend.name}
+          name={friend.firstName + " " + friend.lastName}
           email={friend.email}
-          img={friend.avatar}
+          avatar={friend.avatar}
           _id={friend._id}
           onClick={() => handleMemberSelect(friend)}
         />

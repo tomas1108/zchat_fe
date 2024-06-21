@@ -5,12 +5,15 @@ import {
   Divider,
   IconButton,
   Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import {
   ArchiveBox,
+  Bell,
   CircleDashed,
   MagnifyingGlass,
+  UserPlus,
   Users,
 } from "phosphor-react";
 import { SimpleBarStyle } from "../../components/Scrollbar";
@@ -29,6 +32,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { FetchDirectConversations } from "../../redux/slices/conversation";
 
 import ScrollbarNormal from "../../components/ScrollbarNormal";
+import NotificationButton from "../../components/NoficaitonButton";
 
 const user_id = window.localStorage.getItem("user_id");
 
@@ -82,19 +86,19 @@ const Chats = () => {
             direction="row"
           >
             <Typography variant="h5">Chats</Typography>
-
+           
             <Stack direction={"row"} alignItems="center" spacing={1}>
+              <Tooltip title="Add friend">
               <IconButton
                 onClick={() => {
                   handleOpenDialog();
                 }}
                 sx={{ width: "max-content" }}
               >
-                <Users />
+                <UserPlus />
               </IconButton>
-              <IconButton sx={{ width: "max-content" }}>
-                <CircleDashed />
-              </IconButton>
+              </Tooltip>
+              <NotificationButton notificationCount={0} />
             </Stack>
           </Stack>
           <Stack sx={{ width: "100%" }}>

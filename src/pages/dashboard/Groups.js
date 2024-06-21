@@ -5,14 +5,17 @@ import {
   Divider,
   IconButton,
   Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import {
   ArchiveBox,
+  Bell,
   CircleDashed,
   MagnifyingGlass,
+  Plus,
   Users,
-  UsersThree,
+  
 } from "phosphor-react";
 import { useTheme } from "@mui/material/styles";
 import useResponsive from "../../hooks/useResponsive";
@@ -30,6 +33,8 @@ import { SetGroupConversations, ResetGroupState, SetWebSocketConnection, SetIsFe
 import ScrollbarCustom from "../../components/ScrollbarCustom";
 
 import ScrollbarCustomGroup from "../../components/ScrollBarCustomGroup";
+import NotificationButton from "../../components/NoficaitonButton";
+import { GroupAddOutlined } from "@mui/icons-material";
 
 const Chats = () => {
   const theme = useTheme();
@@ -117,17 +122,17 @@ const Chats = () => {
             <Typography variant="h5">Groups</Typography>
 
             <Stack direction={"row"} alignItems="center" spacing={1}>
+              <Tooltip title="Create group">
               <IconButton
                 onClick={() => {
                   handleOpenCreateGroup();
                 }}
                 sx={{ width: "max-content" }}
               >
-                <UsersThree></UsersThree>
+                <GroupAddOutlined />
               </IconButton>
-              <IconButton sx={{ width: "max-content" }}>
-                <CircleDashed />
-              </IconButton>
+              </Tooltip>
+              <NotificationButton notificationCount={0} />
             </Stack>
           </Stack>
           <Stack sx={{ width: "100%" }}>

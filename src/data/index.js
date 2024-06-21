@@ -34,15 +34,19 @@ const Profile_Menu = [
 const Nav_Buttons = [
   {
     index: 0,
+
     icon: <ChatCircleDots />,
+    tooltip: ("Chats"),
   },
   {
     index: 1,
-    icon: <UsersThree />,
+    icon: <Users />,
+    tooltip: ("Groups"),
   },
   {
     index: 2,
     icon: <Phone />,
+    tooltip: ("Calls"),
   },
   
 ];
@@ -51,6 +55,7 @@ const Nav_Setting = [
   {
     index: 3,
     icon: <GearSix />,
+    tooltip: ("Settings"),
   },
 ];
 
