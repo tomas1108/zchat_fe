@@ -2,6 +2,9 @@ import { createSlice } from "@reduxjs/toolkit";
 
 import axios from "../../utils/axios";
 import { showSnackbar } from "./app";
+import { addNotification } from "./notification";
+import { useSelector } from "react-redux";
+
 
 // ----------------------------------------------------------------------
 
@@ -36,6 +39,7 @@ const slice = createSlice({
       state.user_name = action.payload.user_name;
       state.user_birthDate = action.payload.user_birthDate;
       state.user_gender = action.payload.user_gender
+
     },
     signOut(state, action) {
       state.isLoggedIn = false;
@@ -69,6 +73,7 @@ const slice = createSlice({
 
 // Reducer
 export default slice.reducer;
+
 
 export function NewPassword(formValues) {
   return async (dispatch, getState) => {
@@ -116,6 +121,7 @@ export function NewPassword(formValues) {
 
 export function ForgotPassword(formValues) {
   return async (dispatch, getState) => {
+    
     dispatch(slice.actions.updateIsLoading({ isLoading: true, error: false }));
 
     await axios
@@ -220,61 +226,69 @@ export function createGroup (formValues) {
 
 export function LoginUser(formValues) {
   return async (dispatch, getState) => {
-    // Make API call here
-
     dispatch(slice.actions.updateIsLoading({ isLoading: true, error: false }));
 
-    await axios
-      .post(
+    try {
+      const response = await axios.post(
         "/auth/login",
-        {
-          ...formValues,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      )
-      .then(function (response) {
-        console.log(response.data);
-        dispatch(
-          slice.actions.logIn({
-            isLoggedIn: true,
-            token: response.data.token,
-            user_id: response.data.user_id,
-            user_email: response.data.user_email,
-            user_avatar : response.data.user_avatar,
-            user_name : response.data.user_name,
-            user_birthDate : response.data.user_birthDate,
-            user_gender: response.data.user_gender,
+        { ...formValues },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-          })
-        );
-        window.localStorage.setItem("user_id", response.data.user_id);
-        window.localStorage.setItem("user_email", response.data.user_email);
-        window.localStorage.setItem("user_name", response.data.user_name);
-        window.localStorage.setItem("user_avatar", response.data.user_avatar);
-        dispatch(
-          showSnackbar({ severity: "success", message: response.data.message })
-        );
-        dispatch(
-          slice.actions.updateIsLoading({ isLoading: false, error: false })
-        );
-      })
-      .catch(function (error) {
-        console.log(error);
-        let errorMessage = "Unknown error occurred.";
-        if (error.response && error.response.data && error.response.data.message) {
-          errorMessage = error.response.data.message;
-        }
-        dispatch(showSnackbar({ severity: "error", message: errorMessage }));
-        dispatch(
-          slice.actions.updateIsLoading({ isLoading: false, error: true })
-        );
-      });
+      dispatch(
+        slice.actions.logIn({
+          isLoggedIn: true,
+          token: response.data.token,
+          user_id: response.data.user_id,
+          user_email: response.data.user_email,
+          user_avatar: response.data.user_avatar,
+          user_name: response.data.user_name,
+          user_birthDate: response.data.user_birthDate,
+          user_gender: response.data.user_gender,
+        })
+      );
+
+      window.localStorage.setItem("user_id", response.data.user_id);
+      window.localStorage.setItem("user_email", response.data.user_email);
+      window.localStorage.setItem("user_name", response.data.user_name);
+      window.localStorage.setItem("user_avatar", response.data.user_avatar);
+
+      dispatch(
+        showSnackbar({ severity: "success", message: response.data.message })
+      );
+      dispatch(
+        slice.actions.updateIsLoading({ isLoading: false, error: false })
+      );
+
+      const messages = response.data.noti_messages;
+      const noti_count = response.data.noti_count;
+
+      if (messages && messages.length > 0) {
+        let currentId = noti_count || 1; // Start id from noti_count or default to 1 if null
+        messages.forEach((message) => {
+          const newNotification = {
+            id: currentId++,  
+            message: message,
+          };
+          dispatch(addNotification(newNotification));
+        });
+      }
+
+    } catch (error) {
+      console.error("Login error:", error);
+      let errorMessage = "Unknown error occurred.";
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      }
+      dispatch(showSnackbar({ severity: "error", message: errorMessage }));
+      dispatch(
+        slice.actions.updateIsLoading({ isLoading: false, error: true })
+      );
+    }
   };
 }
+
+
 
 
 

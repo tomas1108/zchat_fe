@@ -33,6 +33,7 @@ import { FetchDirectConversations } from "../../redux/slices/conversation";
 
 import ScrollbarNormal from "../../components/ScrollbarNormal";
 import NotificationButton from "../../components/NoficaitonButton";
+import NotificationList from "../../components/NotificationList";
 
 const user_id = window.localStorage.getItem("user_id");
 
@@ -98,7 +99,9 @@ const Chats = () => {
                 <UserPlus />
               </IconButton>
               </Tooltip>
-              <NotificationButton notificationCount={0} />
+              <NotificationButton  />
+              
+              
             </Stack>
           </Stack>
           <Stack sx={{ width: "100%" }}>

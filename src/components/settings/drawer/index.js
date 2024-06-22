@@ -8,6 +8,7 @@ import {
   Backdrop,
   Typography,
   IconButton,
+  Button,
 } from "@mui/material";
 // hooks
 import useSettings from "../../../hooks/useSettings";
@@ -24,6 +25,7 @@ import SettingDirection from "./SettingDirection";
 import SettingFullscreen from "./SettingFullscreen";
 import SettingColorPresets from "./SettingColorPresets";
 import MateriaUISwitch from "./../../MateriaUISwitch";
+import SettingLanguage from "./SettingLanguage";
 
 // ----------------------------------------------------------------------
 
@@ -67,6 +69,12 @@ export default function SettingsDrawer() {
 
   const [open, setOpen] = useState(false);
   const { onToggleMode } = useSettings();
+  const [language, setLanguage] = useState('EN');
+
+  const handleLanguageChange = (lang) => {
+    setLanguage(lang);
+    // Implement your language switching logic here
+  };
   const notDefault =
     themeMode !== defaultSettings.themeMode ||
     themeLayout !== defaultSettings.themeLayout ||
@@ -134,30 +142,43 @@ export default function SettingsDrawer() {
               </Stack>
 
               <Divider sx={{ borderStyle: "dashed" }} />
+              {/* thay đổi hướng  */}
 
-       
-                <Stack spacing={3} sx={{ p: 3 }}>
-                  <Stack spacing={1.5}>
-                    <Typography variant="subtitle2">Direction</Typography>
-                    <SettingDirection />
-                  </Stack>
-
-                  <Stack spacing={1.5}>
-                    <Typography variant="subtitle2">Presets</Typography>
-                    <SettingColorPresets />
-                  </Stack>
-
-                  <SettingFullscreen />
-
-             
-          <MateriaUISwitch onChange={() => {
-            onToggleMode();
-          }} />
-           
-
-                  
+              <Stack spacing={3} sx={{ p: 3 }}>
+                <Stack spacing={1.5}>
+                  <Typography variant="subtitle2">Direction</Typography>
+                  <SettingDirection />
                 </Stack>
-              
+
+                {/* thay đổi màu */}
+
+                <Stack spacing={1.5}>
+                  <Typography variant="subtitle2">Presets</Typography>
+                  <SettingColorPresets />
+                </Stack>
+
+                {/* thay đổi theme  */}
+                <MateriaUISwitch onChange={() => {
+                  onToggleMode();
+                }} />
+
+
+                <Stack spacing={1.5}>
+                  <Typography variant="subtitle2">
+                    {language === 'EN' ? 'Language' : 'Ngôn ngữ'}
+                  </Typography>
+
+                  <Stack direction="row" spacing={1}>
+                    <Button variant="outlined" size="small" onClick={() => handleLanguageChange('VN')}>
+                      VN
+                    </Button>
+                    <Button variant="outlined" size="small" onClick={() => handleLanguageChange('EN')}>
+                      EN
+                    </Button>
+                  </Stack>
+                </Stack>
+              </Stack>
+
             </RootStyle>
           </>
         )}
