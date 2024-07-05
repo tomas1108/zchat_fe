@@ -13,7 +13,7 @@ import Media from "../../sections/Dashboard/SharedMessages";
 
 import Pic3 from "../../assets/Images/pic3.png";
 import Pic4 from "../../assets/Images/pic4.png";
-import Pic5 from "../../assets/Images/pic6.png";
+import Pic6 from "../../assets/Images/pic6.png";
 
 
 const GeneralApp = () => {
@@ -25,7 +25,7 @@ const GeneralApp = () => {
 
 
   const [imageIndex, setImageIndex] = useState(0);
-  const images = [Pic3, Pic4, Pic5]; // Thay đổi đường dẫn đến hình ảnh tại đây
+  const images = [Pic3, Pic4, Pic6]; // Thay đổi đường dẫn đến hình ảnh tại đây
 
   useEffect(() => {
     const interval = setInterval(() => {

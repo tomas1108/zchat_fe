@@ -21,9 +21,6 @@ RHFUploadAvatar.propTypes = {
 export function RHFUploadAvatar({ name, ...other }) {
   const { control } = useFormContext();
   const {user_avatar} = useSelector((state) => state.auth);
-
-  console.log("user_avatar: ", user_avatar);
-
   return (
     <Controller
       name={name}

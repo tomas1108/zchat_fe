@@ -33,7 +33,7 @@ import { SetGroupConversations, ResetGroupState, SetWebSocketConnection, SetIsFe
 import ScrollbarCustom from "../../components/ScrollbarCustom";
 
 import ScrollbarCustomGroup from "../../components/ScrollBarCustomGroup";
-import NotificationButton from "../../components/NoficaitonButton";
+import NotificationBell from "../../components/NotificationBell";
 import { GroupAddOutlined } from "@mui/icons-material";
 
 const Chats = () => {
@@ -119,7 +119,15 @@ const Chats = () => {
             justifyContent="space-between"
             direction="row"
           >
-            <Typography variant="h5">Groups</Typography>
+          <Search>
+              <SearchIconWrapper>
+                <MagnifyingGlass color="#709CE6" />
+              </SearchIconWrapper>
+              <StyledInputBase
+                placeholder="Search"
+                inputProps={{ "aria-label": "search" }}
+              />
+            </Search>
 
             <Stack direction={"row"} alignItems="center" spacing={1}>
               <Tooltip title="Create group">
@@ -127,25 +135,17 @@ const Chats = () => {
                 onClick={() => {
                   handleOpenCreateGroup();
                 }}
-                sx={{ width: "max-content" }}
+                sx={{ width: "max-content"  }}
+                size="small"
               >
-                <GroupAddOutlined />
+                <GroupAddOutlined size="small" />
               </IconButton>
               </Tooltip>
-              <NotificationButton notificationCount={0} />
+      
+              <NotificationBell />
             </Stack>
           </Stack>
-          <Stack sx={{ width: "100%" }}>
-            <Search>
-              <SearchIconWrapper>
-                <MagnifyingGlass color="#709CE6" />
-              </SearchIconWrapper>
-              <StyledInputBase
-                placeholder="Search…"
-                inputProps={{ "aria-label": "search" }}
-              />
-            </Search>
-          </Stack>
+      
           <Stack spacing={1}>
             <Stack direction={"row"} spacing={1.5} alignItems="center"></Stack>
             <Divider />

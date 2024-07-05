@@ -18,6 +18,7 @@ import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { DeleteFriend } from "../redux/slices/app";
 import { ChatBubble, CheckCircleOutline, HighlightOffOutlined, PersonRemoveAlt1Outlined, PlusOne } from "@mui/icons-material";
+import { removeNotification } from "../redux/slices/notification";
 const user_id = window.localStorage.getItem("user_id");
 const StyledChatBox = styled(Box)(({ theme }) => ({
   "&:hover": {
@@ -60,6 +61,22 @@ const StyledIcon = styled('div')({
   marginRight: '8px',
 });
 
+const ConfirmButton = styled(Button)({
+  backgroundColor: '#1877F2', // Màu xanh dương
+  color: '#fff',
+  '&:hover': {
+    backgroundColor: '#145db0', // Màu khi hover
+  },
+});
+
+const DeleteButton = styled(Button)({
+  backgroundColor: 'gray', // Màu xám
+  color: '#fff',
+  '&:hover': {
+    backgroundColor: '#2c2d2e', // Màu khi hover
+  },
+});
+
 /// mai chỉnh lại requestStatus lưu vào state
 const UserElement = ({ img, firstName, lastName, online, _id, email }) => {
   const theme = useTheme();
@@ -67,6 +84,7 @@ const UserElement = ({ img, firstName, lastName, online, _id, email }) => {
   const [isRequestSent, setIsRequestSent] = useState(false); // Lưu trữ trạng thái của nút button
   const [isLoading, setIsLoading] = useState(false); // Lưu trữ trạng thái loading
   const [isMounted, setIsMounted] = useState(false); // Biến để theo dõi component đã mounted hay chưa
+ 
   const name = `${firstName} ${lastName}`;
   const buttonStyle = {
     fontSize: '13px', // Điều chỉnh kích thước font chữ tại đây
@@ -225,13 +243,24 @@ const FriendRequestElement = ({
   online,
   firstName,
   lastName,
-  id
+  id,
+  _id,
+
+
 }) => {
   const theme = useTheme();
-  const name = `${firstName} ${lastName}`;
 
+  console.log("id",_id);
+  const name = `${firstName} ${lastName}`;
+  const dispatch = useDispatch();
   const handleAcceptRequest = () => {
     socket.emit("accept_request", { request_id: id });
+    dispatch(removeNotification(
+      {
+        message:"sent you a friend request",
+        fromId: _id}
+      )
+    );
   };
 
   const handleDeclineRequest = () => {
@@ -271,20 +300,13 @@ const FriendRequestElement = ({
           </Stack>
         </Stack>
         <Stack direction={"row"} spacing={2} alignItems={"center"}>
-        <Tooltip title="Confirm Request">
-        <Button onClick={handleAcceptRequest}>
-            <StyledIcon style={{ color: 'green' }}>
-              <CheckCircleOutline />
-            </StyledIcon>
-          </Button>
-          </Tooltip>
-          <Tooltip title="Delete Request">
-          <Button onClick={handleDeclineRequest}>
-            <StyledIcon style={{ color: 'red' }}>
-              <HighlightOffOutlined />
-            </StyledIcon>
-          </Button>
-          </Tooltip>
+        <ConfirmButton variant="contained" onClick={ handleAcceptRequest} >
+        Confirm
+      </ConfirmButton>
+        
+      <DeleteButton variant="contained" >
+        Delete
+      </DeleteButton>
 
         </Stack>
       </Stack>
@@ -369,10 +391,10 @@ const FriendRequestElement = ({
 
 //   );
 // };
-const FriendElement = ({ avatar, online, _id, firstName, lastName }) => {
+const FriendElement = ({ avatar, online, _id, name }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
-  const name = `${firstName} ${lastName}`;
+
   const user_id = localStorage.getItem("user_id"); // Lấy user_id từ localStorage
   const handleDeleteFriend = () => {
     if (window.confirm(`Are you sure you want to delete ${name} from your friends?`)) {

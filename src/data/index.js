@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import { t } from "i18next";
 
 import {
+  AddressBook,
   ChatCircleDots,
   Gear,
   GearSix,
@@ -40,7 +41,7 @@ const Nav_Buttons = [
   },
   {
     index: 1,
-    icon: <Users />,
+    icon: <AddressBook />,
     tooltip: ("Groups"),
   },
   {
@@ -320,25 +321,25 @@ const Chat_History = [
   },
 ];
 
+const Message_options_text = [
+  {
+    title: "Remove",
+  },
+  {
+    title: "Forward",
+  },
+];
+
 const Message_options = [
   {
+    title: "Remove",
+
+  },
+  {
     title: "Reply",
+
   },
-  {
-    title: "React to message",
-  },
-  {
-    title: "Forward message",
-  },
-  {
-    title: "Star message",
-  },
-  {
-    title: "Report",
-  },
-  {
-    title: "Delete Message",
-  },
+
 ];
 
 const Shared_docs = [
@@ -458,6 +459,7 @@ export {
   ChatList,
   Chat_History,
   Message_options,
+  Message_options_text,
   Shared_links,
   Shared_docs,
   CallList,

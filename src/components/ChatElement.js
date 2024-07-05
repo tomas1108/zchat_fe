@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Box, Badge, Stack, Avatar, Typography } from "@mui/material";
+import { Box, Badge, Stack, Avatar, Typography, IconButton } from "@mui/material";
 import { styled, useTheme, alpha } from "@mui/material/styles";
 import { useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { SelectConversation } from "../redux/slices/app";
+import { ThreeDRotation } from "@mui/icons-material";
 
 const truncateText = (string, n) => {
   return string?.length > n ? `${string?.slice(0, n)}...` : string;
@@ -44,6 +45,29 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
   },
 }));
 
+const StyledBadgeOff = styled(Badge)(({ theme }) => ({
+  "& .MuiBadge-badge": {
+    backgroundColor: "#666964",
+    color: theme.palette.mode === "light" ? "black" : "white",
+  
+    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+    "&::after": {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      borderRadius: "50%",
+     
+      border: "1px solid currentColor",
+      content: '""',
+    },
+  },
+ 
+}));
+
+
+
 const ChatElement = ({ img, name, msg, time, unread, online, id }) => {
   const dispatch = useDispatch();
   const { room_id } = useSelector((state) => state.app);
@@ -51,6 +75,8 @@ const ChatElement = ({ img, name, msg, time, unread, online, id }) => {
   const isSelected = selectedChatId === id.toString();
   const [isHovered, setIsHovered] = useState(false);
   const theme = useTheme();
+  const isOnline = online === "Online";
+
   const handleMouseEnter = () => {
     setIsHovered(true);
   };
@@ -65,7 +91,7 @@ const ChatElement = ({ img, name, msg, time, unread, online, id }) => {
 
   const getBackgroundColor = () => {
     if (isHovered || isSelected) {
-      return theme.palette.mode === 'light' ? '#e3f2fd' :  alpha(theme.palette.primary.main, 0.5); // Màu nền xanh nhạt hoặc đen nhạt tùy thuộc vào chế độ màu
+      return theme.palette.mode === 'light' ? '#e3f2fd' : alpha(theme.palette.primary.main, 0.5); // Màu nền xanh nhạt hoặc đen nhạt tùy thuộc vào chế độ màu
     } else {
       return 'transparent';
     }
@@ -88,32 +114,56 @@ const ChatElement = ({ img, name, msg, time, unread, online, id }) => {
     >
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Stack direction="row" spacing={2}>
-          {online ? (
+
+          {isOnline ? (
             <StyledBadge
               overlap="circular"
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
               variant="dot"
+
             >
               <Avatar alt={name} src={img} />
             </StyledBadge>
           ) : (
+
+            <StyledBadgeOff
+
+              overlap="circular"
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              variant="dot"
+            >
             <Avatar alt={name} src={img} />
+            </StyledBadgeOff>
           )}
           <Stack spacing={0.3}>
             <Typography variant="subtitle2">{name}</Typography>
-            <Typography variant="caption" color="text.secondary">
-              {msg.length > 35 ? `${msg.slice(0, 35)}...` : msg}
-            </Typography>
-          </Stack>
+            {msg.includes("connected") || !msg.includes("You:") ? (
+
+              <Typography variant="subtitle2" color="text.primary" sx={{ fontSize: '11px'  }} >
+                {msg}
+              </Typography>
+            ) : (
+
+              <Typography variant="caption" color="text.secondary" >
+                {truncateText(msg, 20)}
+         
+              </Typography>
+            )}
+          </Stack>  
         </Stack>
         <Stack spacing={2} alignItems="center">
           <Typography variant="caption" color="text.secondary">
             {time}
           </Typography>
           <Badge className="unread-count" color="error" badgeContent={unread > 5 ? '5+' : unread} />
+            {/* Button cho tùy chọn */}
+        
         </Stack>
+        
       </Stack>
+      
     </StyledChatBox>
+    
   );
 };
 

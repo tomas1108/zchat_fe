@@ -8,12 +8,13 @@ const ScrollbarCustom = ({ autoHide = true, autoHideTimeout = 2000, autoHideDura
     (state) => state.conversation.direct_chat
   );
 
+
   useEffect(() => {
     if (scrollbarsRef.current) {
       // Tự động cuộn xuống dưới cùng khi có nội dung mới
       scrollbarsRef.current.scrollToBottom();
     }
-  }, [current_messages]); // Theo dõi sự thay đổi của nội dung
+  }, [current_messages.length]); // Theo dõi sự thay đổi của nội dung
 
   return (
     <Scrollbars

@@ -56,6 +56,27 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
   },
 }));
 
+const StyledBadgeOff = styled(Badge)(({ theme }) => ({
+  "& .MuiBadge-badge": {
+    backgroundColor: "#666964",
+    color: theme.palette.mode === "light" ? "black" : "white",
+  
+    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+    "&::after": {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      borderRadius: "50%",
+     
+      border: "1px solid currentColor",
+      content: '""',
+    },
+  },
+ 
+}));
+
 const Conversation_Menu = [
   {
     title: "Contact info",
@@ -77,6 +98,7 @@ const ChatHeader = () => {
   const theme = useTheme();
 
   const { current_conversation } = useSelector((state) => state.conversation.direct_chat);
+  const isOnline = current_conversation?.online === "Online";
   const [backgroundImg, setBackgroundImg] = useState(faker.image.fashion()); // Sử dụng useState để lưu trữ URL ảnh nền
   const [conversationMenuAnchorEl, setConversationMenuAnchorEl] = useState(null);
   const openConversationMenu = Boolean(conversationMenuAnchorEl);
@@ -109,7 +131,7 @@ const ChatHeader = () => {
             theme.palette.mode === "light"
               ? "#F8FAFF"
               : theme.palette.background,
-          boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.25)",
+              boxShadow: "0px 0px 8px rgba(0, 0, 0, 0.5)", 
         }}
       >
         <Stack
@@ -123,27 +145,59 @@ const ChatHeader = () => {
             direction="row"
           >
             <Box onClick={handleOpenModal}>
-              <StyledBadge
-                overlap="circular"
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "right",
-                }}
-                variant="dot"
-                onClick={() => switchUser()} // Gọi hàm switchUser khi click vào StyledBadge
 
-              >
+              { isOnline ? ( 
+                <StyledBadge
+                  overlap="circular"
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "right",
+                  }}
+                  variant="dot"
+                  onClick={() => switchUser()} // Gọi hàm switchUser khi click vào StyledBadge
+                >
+                  <Avatar
+                    alt={current_conversation?.name}
+                    src={current_conversation?.img}
+                  />
+                </StyledBadge>
+              ) : (
+
+                <StyledBadgeOff 
+                  theme={theme}
+                  overlap="circular"
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "right",
+                  }}
+                  variant="dot"
+                  onClick={() => switchUser()} // Gọi hàm switchUser khi click vào StyledBadge
+                >
+              
                 <Avatar
                   alt={current_conversation?.name}
                   src={current_conversation?.img}
                 />
-              </StyledBadge>
+                </StyledBadgeOff>
+              )}
+              
             </Box>
             <Stack spacing={0.2}>
               <Typography variant="subtitle2">
                 {current_conversation?.name}
               </Typography>
-              <Typography variant="caption">Online</Typography>
+              { isOnline ? (
+                
+                <Typography variant="caption" color="text.secondary">
+                  Online
+                  </Typography>
+                  
+                ) : (
+                  <Typography variant="caption" color="text.secondary">
+                    Offline
+                  </Typography>
+                )}
+              
             </Stack>
           </Stack>
           <Stack

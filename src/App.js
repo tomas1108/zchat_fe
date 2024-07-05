@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
@@ -6,6 +6,7 @@ import ThemeSettings from "./components/settings";
 import ThemeProvider from "./theme";
 import Router from "./routes";
 import { closeSnackBar } from "./redux/slices/app";
+import { socket } from "./socket";
 
 
 const vertical = "bottom";
@@ -17,7 +18,17 @@ const Alert = React.forwardRef((props, ref) => (
 
 function App() {
   const dispatch = useDispatch();
+  const { user_id } = useSelector((state) => state.auth);
+useEffect(() => {
+  function handleBeforeUnload(e) {
+ 
+    socket.emit("end", {user_id});
+  }
 
+  window.addEventListener("beforeunload", handleBeforeUnload);
+  return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+} 
+, []);
   const { severity, message, open } = useSelector(
     (state) => state.app.snackbar
   );
@@ -38,7 +49,7 @@ function App() {
           autoHideDuration={4000}
           key={vertical + horizontal}
           onClose={() => {
-            console.log("This is clicked");
+      
             dispatch(closeSnackBar());
           }}
         >

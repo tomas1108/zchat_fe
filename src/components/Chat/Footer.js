@@ -10,7 +10,10 @@ import { socket } from "../../socket";
 
 import S3 from "../../utils/s3";
 import { Mic, Stop, VideoFile } from "@mui/icons-material";
+import uploadFileToFirebase from "../../utils/firebase";
 var pieSocket;
+
+
 const StyledInput = styled(TextField)(({ theme }) => ({
   '& .MuiInputBase-input': {
     paddingTop: '12px !important',
@@ -30,6 +33,9 @@ const StyledInput = styled(TextField)(({ theme }) => ({
     color: theme.palette.text.secondary, // Màu của icon
   },
 }));
+
+
+
 
 const date = new Date();
 const hours = date.getHours();
@@ -72,7 +78,7 @@ const ChatInput = ({
   const [openActions, setOpenActions] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
-  const [audioURL, setAudioURL] = useState(""); 
+  const [audioURL, setAudioURL] = useState("");
   const recorderRef = useRef(null);
   const startRecording = () => {
     navigator.mediaDevices
@@ -85,8 +91,10 @@ const ChatInput = ({
         recorderRef.current.ondataavailable = async (e) => {
           const audioBlob = e.data;
           try {
-            const audioKey = await uploadAudioToS3(audioBlob); // Tải file âm thanh lên S3
-            setAudioURL(`https://chat-app-audio-cnm.s3.ap-southeast-1.amazonaws.com/${audioKey}`); // Cập nhật URL âm thanh mới
+            const id = `chat`
+            const key = `audio_${Date.now()}.mp3` // Tên file âm thanh trên storage
+            const audioKey = await uploadFileToFirebase(audioBlob, "audio", id, key) // Tải file âm thanh lên storage
+            setAudioURL(audioKey); // Cập nhật URL âm thanh mới
             handleVoiceMessage(audioKey); // Gửi đường dẫn tệp âm thanh lên máy chủ
           } catch (error) {
             console.error("Failed to upload audio:", error);
@@ -245,6 +253,39 @@ const Footer = () => {
   const { user_avatar } = useSelector((state) => state.auth);
 
 
+  const autoSendMessageNotice = () => {
+    const conversationData = {
+      conversation_id: room_id,
+      avatar: "",
+      from: user_id,
+      to: current_conversation.user_id,
+      text: time,
+      type: "Timeline",
+    };
+    socket.emit('send_message', conversationData);
+  };
+
+  // useEffect(() => {  
+  //   // Gửi thông báo ngay khi component mount
+  //   autoSendMessageNotice();
+
+  //   // Thiết lập interval để gửi thông báo mỗi 10 phút (600000ms)
+  //   const interval = setInterval(() => {
+  //     autoSendMessageNotice();
+  //   }, 60000 );
+
+  //   // Clear interval khi component unmount
+  //   return () => {
+  //     clearInterval(interval);
+  //   };
+  // }, []);
+
+
+
+
+
+
+
 
   function handleEmojiClick(emoji) {
     const input = inputRef.current;
@@ -268,18 +309,20 @@ const Footer = () => {
     if (file) {
       try {
         const key = generateFileName(file);
-        const imageUrl = await uploadImageToS3(file, key);
+        const id = `chat ${room_id}`
+        const imageUrl = await uploadFileToFirebase(file, "media", id, key);
+        console.log("image text", imageUrl);
         const conversationMedia = {
           conversation_id: room_id,
           avatar: user_avatar,
           from: user_id,
           to: current_conversation.user_id,
           time: time,
-          type: "image",
+          type: "Image",
           text: imageUrl,
-        }; 
+        };
 
-        socket.emit('media_message', conversationMedia);
+        socket.emit('send_message', conversationMedia);
       } catch (error) {
         console.error('Failed to upload image:', error);
       }
@@ -291,18 +334,20 @@ const Footer = () => {
     if (file) {
       try {
         const key = generateFileName(file);
-        const fileUrl = await uploadFileToS3(file, key);
+        const id = `chat ${room_id}`
+        const fileUrl = await uploadFileToFirebase(file, "file", id, key);
         const conversationDoc = {
           conversation_id: room_id,
           avatar: user_avatar,
           from: user_id,
           to: current_conversation.user_id,
           time: time,
-          type: "doc",
+          type: "Document",
           text: fileUrl,
         };
 
-        socket.emit('doc_message', conversationDoc);
+
+        socket.emit('send_message', conversationDoc);
       } catch (error) {
         console.error('Failed to upload document:', error);
       }
@@ -346,7 +391,7 @@ const Footer = () => {
         from: user_id,
         to: current_conversation.user_id,
       };
-      socket.emit("text_message", message, conversationData);
+      socket.emit("send_message", message, conversationData);
       setValue("");
     }
   }
@@ -356,6 +401,13 @@ const Footer = () => {
   function handlePieSocketMessage() {
     if (current_conversation && value.trim() !== "") {
       const messageContent = value.trim();
+      let type;
+      if (messageContent) {
+        containsUrl(value) ? type = "Link" : type = "Text"
+      }
+
+
+
       const conversationData = {
         conversation_id: room_id,
         avatar: user_avatar,
@@ -363,10 +415,11 @@ const Footer = () => {
         to: current_conversation.user_id,
         text: messageContent,
         time: time,
-        type: "text",
+        type: type,
+        avatar: user_avatar,
       };
-  
-      socket.emit('text_message', conversationData);
+
+      socket.emit('send_message', conversationData);
       setValue("");
     }
   }
@@ -378,6 +431,8 @@ const Footer = () => {
       setValue("");
     }
   };
+
+
 
   const handleKeyPressPieSocket = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -394,12 +449,12 @@ const Footer = () => {
       to: current_conversation.user_id,
       text: audioUrl,
       time: time,
-      type: "voice", // Sử dụng URL của file âm thanh thay vì tên tệp
+      type: "Voice", // Sử dụng URL của file âm thanh thay vì tên tệp
     };
 
-    socket.emit('voice_message', conversationVoice);
+    socket.emit('send_message', conversationVoice);
   };
-  
+
 
   return (
     <Box
@@ -466,6 +521,7 @@ const Footer = () => {
               justifyContent="center"
             >
               <IconButton onClick={handlePieSocketMessage}>
+                {/* <IconButton onClick={autoSendMessageNotice}> */}
                 <PaperPlaneTilt color="#ffffff" />
               </IconButton>
             </Stack>

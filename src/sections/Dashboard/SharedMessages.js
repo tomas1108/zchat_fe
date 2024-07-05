@@ -85,7 +85,7 @@ const Media = () => {
                   switch (value) {
                     case 0:
                       // Lọc ra các tin nhắn có type là 'text'
-                      if (message.type === 'image') {
+                      if (message.type === 'Image') {
                         return <MediaMsg el={message} key={idx} />;
                       }
                       return null;
@@ -95,7 +95,7 @@ const Media = () => {
                       }
                        break;
                     case 2:
-                      if (message.type === 'doc') {
+                      if (message.type === 'Doc') {
                         return <DocMsg el={message} key={idx} />;
                       }
                       break;   

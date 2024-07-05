@@ -32,8 +32,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { FetchDirectConversations } from "../../redux/slices/conversation";
 
 import ScrollbarNormal from "../../components/ScrollbarNormal";
-import NotificationButton from "../../components/NoficaitonButton";
-import NotificationList from "../../components/NotificationList";
+import NotificationBell from "../../components/NotificationBell";
+import GroupAddOutlinedIcon from '@mui/icons-material/GroupAddOutlined';
+import { GroupAdd, PersonAdd, PersonAddAlt, PersonAddAlt1 } from "@mui/icons-material";
+import CreateGroup from "../../sections/main/CreateGroup";
 
 const user_id = window.localStorage.getItem("user_id");
 
@@ -58,6 +60,21 @@ const Chats = () => {
   };
   const handleOpenDialog = () => {
     setOpenDialog(true);
+  };
+  /// group
+  const { group_conversation, connections } = useSelector((state) => state.group);
+  const [activeGroupId, setActiveGroupId] = useState(null);
+
+  const handleSelectGroup = (groupId) => {
+    setActiveGroupId(groupId);
+  };
+  const [openNewGroup, setOpenNewGroup] = useState(false);
+
+  const handleCloseCreateGroup = () => {
+    setOpenNewGroup(false);
+  };
+  const handleOpenCreateGroup = () => {
+    setOpenNewGroup(true);
   };
 
   return (
@@ -86,6 +103,7 @@ const Chats = () => {
             justifyContent="space-between"
             direction="row"
           >
+
             <Typography variant="h5">Chats</Typography>
            
             <Stack direction={"row"} alignItems="center" spacing={1}>
@@ -96,10 +114,21 @@ const Chats = () => {
                 }}
                 sx={{ width: "max-content" }}
               >
-                <UserPlus />
+                <PersonAddAlt1 />
               </IconButton>
               </Tooltip>
-              <NotificationButton  />
+
+              <Tooltip title="Create group">
+              <IconButton
+                 onClick={() => {
+                  handleOpenCreateGroup();
+                 }} > 
+                <GroupAdd />
+              </IconButton>
+              </Tooltip>
+
+              {/* <NotificationButton  /> */}
+              <NotificationBell />
               
               
             </Stack>
@@ -110,7 +139,7 @@ const Chats = () => {
                 <MagnifyingGlass color="#709CE6" />
               </SearchIconWrapper>
               <StyledInputBase
-                placeholder="Search…"
+                placeholder="Search"
                 inputProps={{ "aria-label": "search" }}
               />
             </Search>
@@ -135,7 +164,9 @@ const Chats = () => {
                   All Chats
                 </Typography>
                 {/* Chat List */}
+    
                 {conversations.filter((el) => !el.pinned).map((el, idx) => {
+                              // console.log("conversations", conversations);  
                   return <ChatElement key={idx} {...el} />;
                 })}
               </Stack>
@@ -145,6 +176,9 @@ const Chats = () => {
       </Box>
       {openDialog && (
         <Friends open={openDialog} handleClose={handleCloseDialog} />
+      )}
+        {openNewGroup && (
+        <CreateGroup open={openNewGroup} handleClose={handleCloseCreateGroup} />
       )}
     </>
   );

@@ -12,9 +12,11 @@ import { useSelector, useDispatch } from "react-redux";
 
 
 
-import Pic1 from "../../assets/Images/pic1.png";
-import Pic2 from "../../assets/Images/pic2.png";
-import wellcome from "../../assets/Images/welcome.png";
+import Pic3 from "../../assets/Images/pic3.png";
+import Pic4 from "../../assets/Images/pic4.png";
+import Pic6 from "../../assets/Images/pic6.png";
+
+
 
 
 const GeneralGroup = () => {
@@ -29,7 +31,7 @@ const GeneralGroup = () => {
   const { group_current_conversation, sidebar } = useSelector((state) => state.group);
 
   const [imageIndex, setImageIndex] = useState(0);
-  const images = [Pic1, Pic2, wellcome]; // Thay đổi đường dẫn đến hình ảnh tại đây
+  const images = [Pic3, Pic4, Pic6]; // Thay đổi đường dẫn đến hình ảnh tại đây
 
   useEffect(() => {
     const interval = setInterval(() => {

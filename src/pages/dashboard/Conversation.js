@@ -33,14 +33,13 @@ const Conversation = ({ isMobile, menu }) => {
   const { room_id } = useSelector((state) => state.app);
 
   useEffect(() => {
-    // Fetch current messages
+   // Fetch current messages
     const current = conversations.find((el) => el?.id === room_id);
     
     socket.emit("get_messages", { conversation_id: current?.id }, (data) => {
-      console.log(data, "List of messages");
+      // console.log(data, "List of  messages");
       dispatch(FetchCurrentMessages({ messages: data }));
     });
-
 
     // Set current conversation
     dispatch(SetCurrentConversation(current));
@@ -56,22 +55,22 @@ const Conversation = ({ isMobile, menu }) => {
           <React.Fragment key={idx}>
             {(() => {
               switch (el.type) {
-                case "divider":
-                  //thời gian
-                  return <Timeline el={el} />
-                case "notice":
+                case "Notice":
                   // thông báo
                   return <Notice el={el} />
-                case "text":
+                case "Timeline":
+                  // thông báo
+                  return <Timeline el={el} />  
+                case "Text":
                   // tin nhắn văn bản
                   return <TextMsg el={el} menu={menu} />
-                case "image" :
+                case "Image" :
                   // hình ảnh  
                   return <MediaMsg el={el} menu={menu} />
-                case "doc":
+                case "Document":
                   // tài liệu
                   return <DocMsg el={el} menu={menu} />
-                case "voice":
+                case "Voice":
                   return <VoiceMsg el={el} menu={menu} />  
                 default:
                   return <TextMsg el={el} menu={menu} />
@@ -92,11 +91,11 @@ const ChatComponent = () => {
     (state) => state.conversation.direct_chat
   );
 
-  useEffect(() => {
+  // useEffect(() => {
    
-    // Scroll to the bottom of the message list when new messages are added
-    messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
-  }, [current_messages]);
+  //   // Scroll to the bottom of the message list when new messages are added
+  //   messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
+  // }, [current_messages]);
 
   return (
     <Stack

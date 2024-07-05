@@ -161,10 +161,9 @@ const FriendsList = () => {
 };
 const RequestsList = () => {
   const dispatch = useDispatch();
-
   const { friendRequests } = useSelector((state) => state.app);
+  
 
-  console.log("FR", friendRequests);
   useEffect(() => {
     dispatch(FetchFriendRequests());
   }, []);

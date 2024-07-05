@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 import axios from "../../utils/axios";
 import { showSnackbar } from "./app";
-import { addNotification } from "./notification";
+import { addNotification, addNumber } from "./notification";
 import { useSelector } from "react-redux";
 
 
@@ -227,14 +227,14 @@ export function createGroup (formValues) {
 export function LoginUser(formValues) {
   return async (dispatch, getState) => {
     dispatch(slice.actions.updateIsLoading({ isLoading: true, error: false }));
-
+    
     try {
       const response = await axios.post(
         "/auth/login",
         { ...formValues },
         { headers: { "Content-Type": "application/json" } }
       );
-
+      console.log("Login response:", response.data);  
       dispatch(
         slice.actions.logIn({
           isLoggedIn: true,
@@ -260,19 +260,38 @@ export function LoginUser(formValues) {
         slice.actions.updateIsLoading({ isLoading: false, error: false })
       );
 
-      const messages = response.data.noti_messages;
-      const noti_count = response.data.noti_count;
+      // const messages = response.data.noti_messages;
+      // const noti_count = response.data.noti_count;
 
-      if (messages && messages.length > 0) {
-        let currentId = noti_count || 1; // Start id from noti_count or default to 1 if null
-        messages.forEach((message) => {
-          const newNotification = {
-            id: currentId++,  
-            message: message,
-          };
-          dispatch(addNotification(newNotification));
-        });
-      }
+      // if (messages && messages.length > 0) {
+      //   let currentId = noti_count || 1; // Start id from noti_count or default to 1 if null
+      //   messages.forEach((message) => {
+      //     const newNotification = {
+      //       id: currentId++,  
+      //       message: message,
+      //     };
+      //     dispatch(addNotification(newNotification));
+      //   });
+      // }
+
+      const list  = response.data.user_noti.notications;
+  
+      if (list === null || list === undefined) {
+        return;
+      } 
+      const newNoti = list.map((item) => {
+        return {
+          id: item._id,
+          message: item.message,
+          time: item.time,
+          avatar: item.avatar,
+          seen: item.seen,
+        };
+      });
+      dispatch(addNotification(newNoti));
+
+      const num = response.data.user_noti.number;
+      dispatch(addNumber(num));
 
     } catch (error) {
       console.error("Login error:", error);
@@ -461,9 +480,9 @@ export const UpdateUserAvatar = (user_id, formData) => {
         }
       )
       .then(function (response) {
-      console.log("data user", response.data.data.user);
+      console.log("data user", response.data.data.avatar);
       dispatch(slice.actions.updateUserAvatarSuccess({
-        user_avatar:response.data.data.user.avatar,
+        user_avatar:formData.avatar,
       }));
       dispatch(
         showSnackbar({ severity: "success", message: response.data.message })

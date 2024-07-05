@@ -199,7 +199,7 @@ const CreateGroupForm = ({ handleClose }) => {
       return (
         <MemberElement
           key={friend._id}
-          name={friend.firstName + " " + friend.lastName}
+          name={friend.name}
           email={friend.email}
           avatar={friend.avatar}
           _id={friend._id}
@@ -212,7 +212,7 @@ const CreateGroupForm = ({ handleClose }) => {
   return (
     <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
       <Stack spacing={3}>
-        <RHFTextField name="name" label="Name" />
+        <RHFTextField name="name" label="Group Name" />
         <RHFAutocomplete
           name="members"
           label="Members"

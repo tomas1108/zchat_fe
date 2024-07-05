@@ -32,6 +32,7 @@ import AntSwitch from "../../components/AntSwitch";
 import { useDispatch, useSelector } from "react-redux";
 import { ToggleSidebar, UpdateSidebarType } from "../../redux/slices/app";
 import ScrollbarNormal from "../../components/ScrollbarNormal";
+import { updateStatusNotice } from "../../redux/slices/notification";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -97,6 +98,15 @@ const Contact = () => {
 
   const [openBlock, setOpenBlock] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const { playSound } = useSelector((state) => state.notifications);
+
+
+  const handleMuteToggle = (event) => {
+    const newMutedStatus = event.target.checked;
+    dispatch(updateStatusNotice(!newMutedStatus));
+    console.log(`Notifications are ${newMutedStatus ? 'muted' : 'unmuted'}`);
+  };
 
   const handleCloseBlock = () => {
     setOpenBlock(false);
@@ -104,6 +114,9 @@ const Contact = () => {
   const handleCloseDelete = () => {
     setOpenDelete(false);
   };
+  const messageTypes = ["Document", "Link", "Media"];
+  const filteredMessages = current_messages?.filter(msg => messageTypes.includes(msg.type)) || [];
+  const messageCount = filteredMessages.length;
 
   return (
     <Box sx={{ width: !isDesktop ? "100vw" : 320, maxHeight: "100vh" }}>
@@ -188,7 +201,7 @@ const Contact = () => {
                 }}
                 endIcon={<CaretRight />}
               >
-                {current_messages?.length || 0}
+                {messageCount || 0}
               </Button>
             </Stack>
             <Stack direction={"row"} alignItems="center" spacing={2}>
@@ -231,11 +244,11 @@ const Contact = () => {
                   Mute Notifications
                 </Typography>
               </Stack>
-              <AntSwitch />
+              <AntSwitch checked={!playSound} onChange={handleMuteToggle} />
             </Stack>
             {/* <Divider /> */}
-           
-           
+
+
             <Stack direction="row" alignItems={"center"} spacing={2}>
               <Button
                 onClick={() => {

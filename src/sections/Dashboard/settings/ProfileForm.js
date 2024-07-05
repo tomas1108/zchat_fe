@@ -9,7 +9,24 @@ import { LoadingButton } from "@mui/lab";
 import { useDispatch, useSelector } from "react-redux";
 import S3 from "../../../utils/s3";
 import { UpdateUserAvatar, UpdateUserProfile } from "../../../redux/slices/auth";
+import { initializeApp } from 'firebase/app';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCB3_DCrMJlPb6FE3MI60X98Dgpr__krNI",
+  authDomain: "zchat-e58b1.firebaseapp.com",
+  projectId: "zchat-e58b1",
+  storageBucket: "zchat-e58b1.appspot.com",
+  messagingSenderId: "299068763423",
+  appId: "1:299068763423:web:958316cc2b4336dcac542a",
+  measurementId: "G-FPPCJFSGH3"
+};
+// Khởi tạo Firebase app nếu chưa tồn tại
+const firebaseApp = initializeApp(firebaseConfig);
+
+// Lấy ra storage từ Firebase
+const storage = getStorage(firebaseApp);
 
 
 
@@ -127,6 +144,35 @@ const ProfileForm = () => {
     }
   };
 
+  // const handleDrop = useCallback(
+  //   async (acceptedFiles) => {
+  //     const file = acceptedFiles[0];
+  //     setFile(file);
+  //     const newFile = Object.assign(file, {
+  //       preview: URL.createObjectURL(file),
+  //     });
+  //     if (file) {
+  //       const key = generateFileName(file);
+  //       try {
+  //         const imageUrl = await uploadFileToS3(file, key);
+  //         console.log("Image URL", imageUrl);
+  //         // Cập nhật giá trị avatar trong form
+  //         setValue("avatar", imageUrl, { shouldValidate: true });
+  //         // Dispatch action để cập nhật avatar trong Redux và cơ sở dữ liệu
+  //         // dispatch(
+  //         //   UpdateUserAvatar(user_id, {
+  //         //     avatar: imageUrl,
+  //         //   })
+  //         // );
+  //       } catch (error) {
+  //         console.error("Error uploading file to S3:", error);
+  //         // Xử lý lỗi tải lên ở đây nếu cần thiết
+  //       }
+  //     }
+  //   },
+  //   [dispatch, setValue, user_id]
+  // );
+  
   const handleDrop = useCallback(
     async (acceptedFiles) => {
       const file = acceptedFiles[0];
@@ -137,18 +183,18 @@ const ProfileForm = () => {
       if (file) {
         const key = generateFileName(file);
         try {
-          const imageUrl = await uploadFileToS3(file, key);
+          const imageUrl = await uploadFileToFirebase(file, key);
           console.log("Image URL", imageUrl);
           // Cập nhật giá trị avatar trong form
           setValue("avatar", imageUrl, { shouldValidate: true });
           // Dispatch action để cập nhật avatar trong Redux và cơ sở dữ liệu
-          // dispatch(
-          //   UpdateUserAvatar(user_id, {
-          //     avatar: imageUrl,
-          //   })
-          // );
+          dispatch(
+            UpdateUserAvatar(user_id, {
+              avatar: imageUrl,
+            })
+          );
         } catch (error) {
-          console.error("Error uploading file to S3:", error);
+          console.error("Error uploading file to Firebase:", error);
           // Xử lý lỗi tải lên ở đây nếu cần thiết
         }
       }
@@ -168,16 +214,22 @@ const ProfileForm = () => {
    
   };
 
+  const uploadFileToFirebase = async (file, key) => {
+    const fileRef = ref(storage, `images/${user_id}/${key}`);
+    await uploadBytes(fileRef, file);
+    const downloadURL = await getDownloadURL(fileRef);
+    return downloadURL;
+  };
+  
+
   return (
     <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
       <Stack spacing={4}>
-        <RHFUploadAvatar name="avatar" maxSize={3145728} onDrop={handleDrop} 
-        defaultValue ={user_avatar} />
+      <RHFUploadAvatar name="avatar" maxSize={3145728} onDrop={handleDrop} />
         <RHFTextField
           helperText={"This name is visible to your contacts"}
           name="name"
           label="Name"
-          defaultValue={user_name}
         />
         
         <FormLabel component="legend">Gender</FormLabel>
