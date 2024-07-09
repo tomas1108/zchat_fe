@@ -80,7 +80,7 @@ const UserComponent = ({ img, firstName, lastName, online, _id }) => {
             onClick={() => {
               socket.emit("friend_request", { to: _id, from: user_id }, () => {
                 alert("request sent");
-                console.log("client" , to, from);
+                // console.log("client" , to, from);
               });
              
             }}

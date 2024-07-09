@@ -247,7 +247,7 @@ export function LoginUser(formValues) {
           user_gender: response.data.user_gender,
         })
       );
-
+       window.localStorage.setItem("token", response.data.token);
       window.localStorage.setItem("user_id", response.data.user_id);
       window.localStorage.setItem("user_email", response.data.user_email);
       window.localStorage.setItem("user_name", response.data.user_name);

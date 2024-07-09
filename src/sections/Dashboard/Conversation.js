@@ -30,7 +30,8 @@ import likeIcon from "../../assets/icons/flags/react/like.png";
 import MessageActions from "../../components/MessageActions";
 import { useSelector } from "react-redux";
 import { socket } from "../../socket";
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { compareDateTimeToday, compareDateTimeUSToday } from "../../utils/dateTime";
+import { set } from "react-hook-form";
 
 
 
@@ -57,6 +58,7 @@ function extractFilenameFromUrl(url) {
 }
 
 function parseDateTime(dateTimeStr) {
+  // console.log("dateStr", dateTimeStr)
   if (!dateTimeStr || typeof dateTimeStr !== 'string') return null; // Kiểm tra nếu dateTimeStr không tồn tại hoặc không phải chuỗi
   const [datePart, timePart] = dateTimeStr.split(' ');
   if (!datePart || !timePart) return null; // Kiểm tra nếu không có phần ngày hoặc phần thời gian
@@ -67,6 +69,7 @@ function parseDateTime(dateTimeStr) {
 
 function getDayDifference(dateTimeStr) {
   const messageTime = parseDateTime(dateTimeStr);
+  // console.log("Message time: ", messageTime);
   if (!messageTime) return null; // Kiểm tra nếu messageTime không tồn tại
   const currentTime = new Date();
   const oneDay = 24 * 60 * 60 * 1000; // Miliseconds in one day
@@ -182,7 +185,7 @@ const MessageOption = () => {
 };
 
 
-const TextMsg = ({ el, menu }) => {
+const TextMsg = ({ el, menu, lastMessage }) => {
   const theme = useTheme();
   const incoming = el.from !== user_id;
   const [isFocused, setIsFocused] = React.useState(false);
@@ -190,21 +193,18 @@ const TextMsg = ({ el, menu }) => {
   const [showRemoveReaction, setShowRemoveReaction] = React.useState(false);
   const { room_id } = useSelector((state) => state.app);
   const [anchorEl, setAnchorEl] = React.useState(null);
+  // console.log("last", lastMessage)
+
+  const time = compareDateTimeUSToday(el.created_at);
+  // console.log("time", time)
+  ///console.log("time", el.created_at)
   const timeDifference = getDayDifference(el.created_at);
+
   const timeLabel = timeDifference > 0 ? `${timeDifference} days ago` : `Today at ${(el.created_at)}`;
+
   const reactType = el ? el.reactions : null;
   const message_id = el._id;
-  const theme1 = createTheme({
-    typography: {
-      body1: {
-        color: '#b0b0b0',
-        backgroundColor: '#333',
-        padding: '10px',
-        borderRadius: '5px',
-        display: 'inline-block',
-      },
-    },
-  });
+
 
   const handleSelectMessage = () => {
     console.log("Selected message ID: ", message_id);
@@ -235,7 +235,7 @@ const TextMsg = ({ el, menu }) => {
   };
 
   const handleReaction = (reactionType) => {
-    socket.emit("update_reactions", { messageId:message_id, reactionType: reactionType , userId: user_id, conversationId: room_id});
+    socket.emit("update_reactions", { messageId: message_id, reactionType: reactionType, userId: user_id, conversationId: room_id });
     handleClose();
   };
 
@@ -270,17 +270,19 @@ const TextMsg = ({ el, menu }) => {
             {el.text}
           </a>
         ) : (
-          <Tooltip title={timeLabel} placement={incoming ? "right" : "left"}>
+          <Tooltip title={time} placement={incoming ? "right" : "left"}>
             <Typography
               variant="body2"
               color={incoming ? theme.palette.text.primary : "#fff"}
               className={el.from ? "bold-text" : ""}
               sx={{ wordBreak: 'break-word' }}
-              
+
             >
               {el.text}
             </Typography>
+
           </Tooltip>
+
         )}
       </React.Fragment>
     );
@@ -384,7 +386,7 @@ const TextMsg = ({ el, menu }) => {
             {reactType === 'surprised' && <Avatar src={wowIcon} sx={{ width: 15, height: 15 }} />}
             {reactType === 'angry' && <Avatar src={angryIcon} sx={{ width: 15, height: 15 }} />}
             {reactType === 'like' && <Avatar src={likeIcon} sx={{ width: 15, height: 15 }} />}
-         
+
 
           </Box>
         )}
@@ -447,6 +449,545 @@ const TextMsg = ({ el, menu }) => {
 
         </Popover>
       </Box>
+
+    </Stack>
+  );
+};
+const TextMsg2 = ({ el, menu, lastMessage }) => {
+  const theme = useTheme();
+  const incoming = el.from !== user_id;
+  const [isFocused, setIsFocused] = React.useState(false);
+  const [reaction, setReaction] = React.useState(null);
+  const [showRemoveReaction, setShowRemoveReaction] = React.useState(false);
+  const { room_id } = useSelector((state) => state.app);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const time = compareDateTimeUSToday(el.created_at);
+  // console.log("el", el)
+
+  const reactType = el ? el.reactions : null;
+  const message_id = el._id;
+
+  const handleSelectMessage = () => {
+    console.log("Selected message ID: ", message_id);
+  };
+
+  const handleMouseEnter = () => {
+    setIsFocused(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsFocused(false);
+  };
+
+  const handleLinkClick = (event) => {
+    event.preventDefault(); // Ngăn chặn hành động mặc định của liên kết
+    window.open(el.text, "_blank"); // Mở liên kết trong một tab mới
+  };
+
+  const handleReact = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+    setShowRemoveReaction(false);
+  };
+
+  const handleReaction = (reactionType) => {
+    socket.emit("update_reactions", { messageId: message_id, reactionType: reactionType, userId: user_id, conversationId: room_id });
+    handleClose();
+  };
+
+  const handleReply = () => {
+    const messageId = message_id;
+    console.log("Reply to message ID: ", messageId);
+  };
+
+  const handleRemoveReaction = () => {
+    socket.emit("update_reactions", { messageId: message_id, reactionType: null, userId: user_id, conversationId: room_id });
+    setReaction(null);
+    handleClose();
+  };
+  const handleOptions = () => {
+    // handle options
+  };
+
+  const renderContent = () => {
+    return (
+      <React.Fragment>
+        {isLink(el.text) ? (
+          <a
+            href={el.text}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleLinkClick}
+            style={{
+              color: incoming ? theme.palette.text.main : theme.palette.common.white,
+              wordBreak: 'break-word'
+            }}
+          >
+            {el.text}
+          </a>
+        ) : (
+          <Tooltip title={time} placement={incoming ? "right" : "left"}>
+            <Typography
+              variant="body2"
+              color={incoming ? theme.palette.text.primary : "#fff"}
+              className={el.from ? "bold-text" : ""}
+              sx={{ wordBreak: 'break-word' }}
+            >
+              {el.text}
+            </Typography>
+          </Tooltip>
+        )}
+      </React.Fragment>
+    );
+  };
+
+  return (
+    <Stack direction="row" justifyContent={incoming ? "start" : "end"}>
+      {incoming && (
+        <Avatar
+          src={el.avatar}
+          alt={el.name}
+          sx={{ width: 24, height: 24, mr: 0.5 }}
+        />
+      )}
+      <Stack direction="column" alignItems={incoming ? "flex-start" : "flex-end"}>
+        <Box
+          px={1.5}
+          py={1.5}
+          sx={{
+            backgroundColor: incoming
+              ? alpha(theme.palette.background.default, 1)
+              : "#0084FF",
+            borderRadius: 1.5,
+            width: "max-content",
+            display: "flex",
+            alignItems: "center",
+            position: "relative"
+          }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {renderContent()}
+          {isFocused && (
+            <Box
+              display="flex"
+              alignItems="center"
+              position="absolute"
+              top="50%"
+              left={incoming ? '100%' : 'auto'}
+              right={incoming ? 'auto' : '100%'}
+              transform="translateY(-50%)"
+            >
+              {incoming ? (
+                <>
+                  <Tooltip title="React">
+                    <IconButton size="small" onClick={handleReact}>
+                      <EmojiEmotionsIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Reply">
+                    <IconButton size="small" onClick={handleReply}>
+                      <ReplyIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="More">
+                    <IconButton size="small" onClick={handleOptions}>
+                      <MessageOptionText />
+                    </IconButton>
+                  </Tooltip>
+                </>
+              ) : (
+                <>
+                  <Tooltip title="More">
+                    <IconButton size="small" onClick={handleOptions}>
+                      <MessageOptionText />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Reply">
+                    <IconButton size="small" onClick={handleReply}>
+                      <ReplyIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="React">
+                    <IconButton size="small" onClick={handleReact}>
+                      <EmojiEmotionsIcon />
+                    </IconButton>
+                  </Tooltip>
+                </>
+              )}
+            </Box>
+          )}
+          {reactType && (
+            <Box
+              sx={{
+                display: reactType === "None" ? 'none' : 'flex',  // Sửa điều kiện ở đây
+                alignItems: 'center',
+                justifyContent: 'center',
+                mt: 0.5,
+                borderRadius: 1,
+                backgroundColor: "background.paper",
+                padding: '2px 4px',
+                position: 'absolute',
+                top: 45,
+                left: incoming ? 'auto' : 0,
+                right: incoming ? 0 : 'auto',
+                transform: 'translateY(-50%)',
+              }}
+            >
+              {reactType === 'love' && <Avatar src={tymIcon} sx={{ width: 15, height: 15 }} />}
+              {reactType === 'haha' && <Avatar src={hahaIcon} sx={{ width: 15, height: 15 }} />}
+              {reactType === 'sad' && <Avatar src={sadIcon} sx={{ width: 15, height: 15 }} />}
+              {reactType === 'surprised' && <Avatar src={wowIcon} sx={{ width: 15, height: 15 }} />}
+              {reactType === 'angry' && <Avatar src={angryIcon} sx={{ width: 15, height: 15 }} />}
+              {reactType === 'like' && <Avatar src={likeIcon} sx={{ width: 15, height: 15 }} />}
+            </Box>
+          )}
+          <Popover
+            open={Boolean(anchorEl)}
+            anchorEl={anchorEl}
+            onClose={handleClose}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'center',
+            }}
+            transformOrigin={{
+              vertical: 'bottom',
+              horizontal: 'center',
+            }}
+          >
+            <Box display="flex" p={1}>
+              <IconButton size="small" onClick={() => handleReaction('love')}>
+                <Avatar
+                  src={tymIcon}
+                  sx={{ width: 24, height: 24 }}
+                />
+              </IconButton>
+              <IconButton size="small" onClick={() => handleReaction('haha')}>
+                <Avatar
+                  src={hahaIcon}
+                  sx={{ width: 24, height: 24 }}
+                />
+              </IconButton>
+              <IconButton size="small" onClick={() => handleReaction('sad')}>
+                <Avatar
+                  src={sadIcon}
+                  sx={{ width: 24, height: 24 }}
+                />
+              </IconButton>
+              <IconButton size="small" onClick={() => handleReaction('surprised')}>
+                <Avatar
+                  src={wowIcon}
+                  sx={{ width: 24, height: 24 }}
+                />
+              </IconButton>
+              <IconButton size="small" onClick={() => handleReaction('angry')}>
+                <Avatar
+                  src={angryIcon}
+                  sx={{ width: 24, height: 24 }}
+                />
+              </IconButton>
+              <IconButton size="small" onClick={() => handleReaction('like')}>
+                <Avatar
+                  src={likeIcon}
+                  sx={{ width: 24, height: 24 }}
+                />
+              </IconButton>
+              {showRemoveReaction && (
+                <IconButton size="small" onClick={handleRemoveReaction}>
+                  <Close />
+                </IconButton>
+              )}
+            </Box>
+          </Popover>
+        </Box>
+        {!incoming && lastMessage(
+          <Typography
+            variant="caption"
+            sx={{ color: theme.palette.text.secondary, marginTop: '4px' }}
+          >
+            Sent
+          </Typography>
+        )}
+      </Stack>
+    </Stack>
+  );
+};
+
+const TextMsg3 = ({ el, menu }) => {
+  const theme = useTheme();
+  const incoming = el.from !== user_id;
+  const [isFocused, setIsFocused] = React.useState(false);
+  const [reaction, setReaction] = React.useState(null);
+  const [showRemoveReaction, setShowRemoveReaction] = React.useState(false);
+  const { room_id } = useSelector((state) => state.app);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  
+  
+
+
+// console.log("arrary", arrary); 
+  // console.log("matchingItems", matchingItems);
+
+
+  const time = compareDateTimeUSToday(el.created_at);
+  // console.log("time", time);
+  //console.log("time", el.created_at)
+  const timeDifference = getDayDifference(el.created_at);
+
+  const timeLabel = timeDifference > 0 ? `${timeDifference} days ago` : `Today at ${(el.created_at)}`;
+
+  const reactType = el ? el.reactions : null;
+  const message_id = el._id;
+
+  const handleSelectMessage = () => {
+    console.log("Selected message ID: ", message_id);
+  };
+
+  const handleMouseEnter = () => {
+    setIsFocused(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsFocused(false);
+  };
+
+  const handleLinkClick = (event) => {
+    event.preventDefault(); // Ngăn chặn hành động mặc định của liên kết
+    window.open(el.text, "_blank"); // Mở liên kết trong một tab mới
+  };
+
+  const handleReact = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+    setShowRemoveReaction(false);
+  };
+
+  const handleReaction = (reactionType) => {
+    socket.emit("update_reactions", { messageId: message_id, reactionType: reactionType, userId: user_id, conversationId: room_id });
+    handleClose();
+  };
+
+  const handleReply = () => {
+    const messageId = message_id;
+    console.log("Reply to message ID: ", messageId);
+  };
+
+  const handleRemoveReaction = () => {
+    socket.emit("update_reactions", { messageId: message_id, reactionType: null, userId: user_id, conversationId: room_id });
+    setReaction(null);
+    handleClose();
+  };
+  const handleOptions = () => {
+    // handle options
+  };
+
+  const renderContent = () => {
+    return (
+      <React.Fragment>
+        {isLink(el.text) ? (
+          <a
+            href={el.text}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleLinkClick}
+            style={{
+              color: incoming ? theme.palette.text.main : theme.palette.common.white,
+              wordBreak: 'break-word'
+            }}
+          >
+            {el.text}
+          </a>
+        ) : (
+          <Tooltip title={time} placement={incoming ? "right" : "left"}>
+            <Typography
+              variant="body2"
+              color={incoming ? theme.palette.text.primary : "#fff"}
+              className={el.from ? "bold-text" : ""}
+              style={{ wordBreak: "break-word"}}
+            >
+              {el.text}
+            </Typography>
+          </Tooltip>
+        )}
+      </React.Fragment>
+    );
+  };
+
+  return (
+    <Stack direction="row" justifyContent={incoming ? "start" : "end"}>
+      {incoming && (
+        <Avatar
+          src={el.avatar}
+          alt={el.name}
+          sx={{ width: 24, height: 24, mr: 0.5 }}
+        />
+      )}
+      <Stack direction="column" alignItems={incoming ? "flex-start" : "flex-end"}>
+        <Box
+          px={1.5}
+          py={1.5}
+          sx={{
+            backgroundColor: incoming
+              ? alpha(theme.palette.background.default, 1)
+              : "#0084FF",
+            borderRadius: 1.5,
+            width: "max-content",
+            display: "flex",
+            alignItems: "center",
+            position: "relative"
+          }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {renderContent()}
+          {isFocused && (
+            <Box
+              display="flex"
+              alignItems="center"
+              position="absolute"
+              top="50%"
+              left={incoming ? '100%' : 'auto'}
+              right={incoming ? 'auto' : '100%'}
+              transform="translateY(-50%)"
+            >
+              {incoming ? (
+                <>
+                  <Tooltip title="React">
+                    <IconButton size="small" onClick={handleReact}>
+                      <EmojiEmotionsIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Reply">
+                    <IconButton size="small" onClick={handleReply}>
+                      <ReplyIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="More">
+                    <IconButton size="small" onClick={handleOptions}>
+                      <MessageOptionText />
+                    </IconButton>
+                  </Tooltip>
+                </>
+              ) : (
+                <>
+                  <Tooltip title="More">
+                    <IconButton size="small" onClick={handleOptions}>
+                      <MessageOptionText />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Reply">
+                    <IconButton size="small" onClick={handleReply}>
+                      <ReplyIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="React">
+                    <IconButton size="small" onClick={handleReact}>
+                      <EmojiEmotionsIcon />
+                    </IconButton>
+                  </Tooltip>
+                </>
+              )}
+            </Box>
+          )}
+          {reactType && (
+            <Box
+              sx={{
+                display: reactType === "None" ? 'none' : 'flex',  // Sửa điều kiện ở đây
+                alignItems: 'center',
+                justifyContent: 'center',
+                mt: 0.5,
+                borderRadius: 1,
+                backgroundColor: "background.paper",
+                padding: '2px 4px',
+                position: 'absolute',
+                top: 45,
+                left: incoming ? 'auto' : 0,
+                right: incoming ? 0 : 'auto',
+                transform: 'translateY(-50%)',
+              }}
+            >
+              {reactType === 'love' && <Avatar src={tymIcon} sx={{ width: 15, height: 15 }} />}
+              {reactType === 'haha' && <Avatar src={hahaIcon} sx={{ width: 15, height: 15 }} />}
+              {reactType === 'sad' && <Avatar src={sadIcon} sx={{ width: 15, height: 15 }} />}
+              {reactType === 'surprised' && <Avatar src={wowIcon} sx={{ width: 15, height: 15 }} />}
+              {reactType === 'angry' && <Avatar src={angryIcon} sx={{ width: 15, height: 15 }} />}
+              {reactType === 'like' && <Avatar src={likeIcon} sx={{ width: 15, height: 15 }} />}
+            </Box>
+          )}
+          <Popover
+            open={Boolean(anchorEl)}
+            anchorEl={anchorEl}
+            onClose={handleClose}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'center',
+            }}
+            transformOrigin={{
+              vertical: 'bottom',
+              horizontal: 'center',
+            }}
+          >
+            <Box display="flex" p={1}>
+              <IconButton size="small" onClick={() => handleReaction('love')}>
+                <Avatar
+                  src={tymIcon}
+                  sx={{ width: 24, height: 24 }}
+                />
+              </IconButton>
+              <IconButton size="small" onClick={() => handleReaction('haha')}>
+                <Avatar
+                  src={hahaIcon}
+                  sx={{ width: 24, height: 24 }}
+                />
+              </IconButton>
+              <IconButton size="small" onClick={() => handleReaction('sad')}>
+                <Avatar
+                  src={sadIcon}
+                  sx={{ width: 24, height: 24 }}
+                />
+              </IconButton>
+              <IconButton size="small" onClick={() => handleReaction('surprised')}>
+                <Avatar
+                  src={wowIcon}
+                  sx={{ width: 24, height: 24 }}
+                />
+              </IconButton>
+              <IconButton size="small" onClick={() => handleReaction('angry')}>
+                <Avatar
+                  src={angryIcon}
+                  sx={{ width: 24, height: 24 }}
+                />
+              </IconButton>
+              <IconButton size="small" onClick={() => handleReaction('like')}>
+                <Avatar
+                  src={likeIcon}
+                  sx={{ width: 24, height: 24 }}
+                />
+              </IconButton>
+              {showRemoveReaction && (
+                <IconButton size="small" onClick={handleRemoveReaction}>
+                  <Close />
+                </IconButton>
+              )}
+            </Box>
+          </Popover>
+        </Box>
+        {/* {sent === true && (
+          <Typography
+            variant="caption"
+            sx={{ color: theme.palette.text.secondary, alignSelf: 'flex-end', marginTop: '4px' }}
+          >
+            Sent
+          </Typography>
+        )} */}
+      </Stack>
     </Stack>
   );
 };
@@ -802,7 +1343,7 @@ const MediaMsg = ({ el, menu }) => {
         <Stack spacing={1}>
           <Tooltip title={timeLabel} placement={incoming ? "right" : "left"}>
             <img
-             ref={setImgRef}
+              ref={setImgRef}
               src={el.text}
               alt={el.text}
               style={{
@@ -810,6 +1351,8 @@ const MediaMsg = ({ el, menu }) => {
                 borderRadius: "10px",
                 cursor: "pointer",
                 objectFit: 'cover',
+                width: 150,
+                height: 150,
               }}
               onClick={handleOpenModal}
             />
@@ -855,14 +1398,14 @@ const MediaMsg = ({ el, menu }) => {
             left={incoming ? '104%' : 'auto'}
             right={incoming ? 'auto' : '102%'}
             transform="translateY(-50%)"
-         
-          
+
+
           >
             {incoming ? (
               <>
-                  <IconButton  >
-                  </IconButton>
-              
+                <IconButton  >
+                </IconButton>
+
 
                 <Tooltip title="React" placement="top">
                   <IconButton size="small" onClick={handleReact}>
@@ -887,17 +1430,17 @@ const MediaMsg = ({ el, menu }) => {
                     <MessageOption />
                   </IconButton>
                 </Tooltip>
-               
+
                 <Tooltip title="React" placement="top">
                   <IconButton size="small" onClick={handleReact}>
                     <EmojiEmotionsIcon />
                   </IconButton>
                 </Tooltip>
-               
-                  <IconButton  >
-               
-                  </IconButton>
-            
+
+                <IconButton  >
+
+                </IconButton>
+
               </>
             )}
           </Box>
@@ -909,12 +1452,12 @@ const MediaMsg = ({ el, menu }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: 1,  
+              borderRadius: 1,
               backgroundColor: "background.paper",
               padding: '2px 4px',
               position: 'absolute',
               bottom: '-8px',
-              right: incoming ?'20px' : 'auto',
+              right: incoming ? '20px' : 'auto',
               left: incoming ? 'auto' : '20px',
               transform: 'translateY(-50%)',
             }}

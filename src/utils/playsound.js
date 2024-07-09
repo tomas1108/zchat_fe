@@ -1,6 +1,14 @@
+// 
+
 export const playNotificationSound = (() => {
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  let audioContext;
   let audioBuffers = {};
+
+  const initializeAudioContext = () => {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+  };
 
   const loadSound = async (url) => {
     if (!audioBuffers[url]) {
@@ -12,6 +20,13 @@ export const playNotificationSound = (() => {
   };
 
   return (url, volume = 1) => {
+    // Check if the audio context is allowed to start
+    if (audioContext && audioContext.state === 'suspended') {
+      audioContext.resume();
+    } else if (!audioContext) {
+      initializeAudioContext();
+    }
+
     loadSound(url).then((audioBuffer) => {
       if (audioBuffer) {
         const source = audioContext.createBufferSource();

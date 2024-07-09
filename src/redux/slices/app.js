@@ -153,7 +153,7 @@ export function FetchUsers() {
   return async (dispatch, getState) => {
     await axios
       .get(
-        "/user/get-users",
+        "/user/get-recomend-friends",
 
         {
           headers: {

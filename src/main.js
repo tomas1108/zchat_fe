@@ -11,7 +11,7 @@ let recorder = null;
 let chunks = [];
 
 function SetupAudio() {
-    console.log("Setting up audio");
+    // console.log("Setting up audio");
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices
             .getUserMedia({

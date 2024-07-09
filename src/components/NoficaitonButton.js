@@ -62,13 +62,13 @@ const NotificationButton = () => {
 
   const handleAccept = (notification) => {
     // Handle accept friend request
-    console.log('Accepted friend request:', notification);
+    // console.log('Accepted friend request:', notification);
     // Add your accept friend request logic here
   };
 
   const handleDecline = (notification) => {
     // Handle decline friend request
-    console.log('Declined friend request:', notification);
+    // console.log('Declined friend request:', notification);
     // Add your decline friend request logic here
   };
 

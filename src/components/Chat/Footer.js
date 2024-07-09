@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Box, IconButton, InputAdornment, Stack, TextField, Tooltip } from "@mui/material";
+import { Box, IconButton, InputAdornment, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import { Camera, File, FileVideo, Gif, Image, LinkSimple, PaperPlaneTilt, Smiley, Sticker, User } from "phosphor-react";
 import { useTheme, styled } from "@mui/material/styles";
 import useResponsive from "../../hooks/useResponsive";
@@ -11,7 +11,8 @@ import { socket } from "../../socket";
 import S3 from "../../utils/s3";
 import { Mic, Stop, VideoFile } from "@mui/icons-material";
 import uploadFileToFirebase from "../../utils/firebase";
-var pieSocket;
+import { dateTime } from "../../utils/dateTime";
+import conversation from "../../redux/slices/conversation";
 
 
 const StyledInput = styled(TextField)(({ theme }) => ({
@@ -37,10 +38,10 @@ const StyledInput = styled(TextField)(({ theme }) => ({
 
 
 
-const date = new Date();
-const hours = date.getHours();
-const minutes = date.getMinutes();
-const time = `${hours}:${minutes}`;
+// const date = new Date();
+// const hours = date.getHours();
+// const minutes = date.getMinutes();
+// const time = `${hours}:${minutes}`;
 
 const Actions = [
   {
@@ -79,6 +80,8 @@ const ChatInput = ({
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioURL, setAudioURL] = useState("");
+  const { current_conversation } = useSelector((state) => state.conversation.direct_chat);
+ 
   const recorderRef = useRef(null);
   const startRecording = () => {
     navigator.mediaDevices
@@ -138,18 +141,65 @@ const ChatInput = ({
     return `https://chat-app-audio-cnm.s3.ap-southeast-1.amazonaws.com/${audioKey}`;
   };
 
+  const handleCli = () => {
+    console.log("click");
+  }
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef(null);
+
+  const handleInputChange = (event) => {
+    const { value } = event.target;
+    setValue(value);
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set a new timeout to reset isTyping after a delay
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+    }, 1000); // 1 second delay (adjust as needed)
+  
+    // Kiểm tra xem giá trị nhập liệu có thay đổi hay không
+    if (value.trim() !== "") {
+      socket.emit("typing", { userId: current_conversation.user_id , conversationId: current_conversation.id});
+    } else {
+      socket.emit("stopTyping", { userId: current_conversation.user_id });
+    }
+  };
+  
+
+  useEffect(() => {
+    // Lắng nghe sự kiện typing từ server
+    socket.on("typing", ({ userId }) => {
+      // Kiểm tra userId để biết ai đang soạn tin nhắn
+      setIsTyping(true);
+
+      // Thiết lập một timeout để ẩn thông báo typing sau một khoảng thời gian
+      setTimeout(() => {
+        setIsTyping(false);
+      }, 2000); // Ví dụ: 2 giây sau khi ngừng nhập liệu
+    });
+
+    return () => {
+      socket.off("typing"); // Dọn dẹp listener khi component unmount
+    };
+  }, []);
+
 
   return (
     <>
       <StyledInput
         inputRef={inputRef}
         value={value}
-        onChange={(event) => {
-          setValue(event.target.value);
-        }}
+        // onChange={(event) => {
+        //   setValue(event.target.value);
+        // }}
+        onChange={handleInputChange}
         fullWidth
-        placeholder="Write a message..."
+        placeholder= {`Type a message to `}
         variant="filled"
+        // onClick={handleCli}
         InputProps={{
           disableUnderline: true,
           startAdornment: (
@@ -186,7 +236,14 @@ const ChatInput = ({
           ),
         }}
         onKeyPress={handleKeyPressPieSocket}
+        onFocus={handleCli}
       />
+            {/* {isTyping && (
+        <Typography variant="caption" color="textSecondary">
+          {`${current_conversation.name} is typing...`}
+        </Typography>
+      )} */}
+
       <Stack
         sx={{
           position: "relative",
@@ -241,7 +298,7 @@ const Footer = () => {
   const theme = useTheme();
   const { current_conversation } = useSelector((state) => state.conversation.direct_chat);
   const user_id = window.localStorage.getItem("user_id");
-
+  const [currentDateTime, setCurrentDateTime] = useState('');
   const user_name = window.localStorage.getItem("user_name");
   const isMobile = useResponsive("between", "md", "xs", "sm");
   const { sideBar, room_id } = useSelector((state) => state.app);
@@ -259,7 +316,7 @@ const Footer = () => {
       avatar: "",
       from: user_id,
       to: current_conversation.user_id,
-      text: time,
+      text: currentDateTime,
       type: "Timeline",
     };
     socket.emit('send_message', conversationData);
@@ -279,6 +336,15 @@ const Footer = () => {
   //     clearInterval(interval);
   //   };
   // }, []);
+  useEffect(() => {
+    const interval = setInterval(() => {
+        setCurrentDateTime(dateTime());
+    }, 1000); // Cập nhật mỗi giây
+
+    return () => clearInterval(interval); // Xóa interval khi component unmount
+}, []);
+
+
 
 
 
@@ -311,13 +377,13 @@ const Footer = () => {
         const key = generateFileName(file);
         const id = `chat ${room_id}`
         const imageUrl = await uploadFileToFirebase(file, "media", id, key);
-        console.log("image text", imageUrl);
+        // console.log("image text", imageUrl);
         const conversationMedia = {
           conversation_id: room_id,
           avatar: user_avatar,
           from: user_id,
           to: current_conversation.user_id,
-          time: time,
+          time: currentDateTime,
           type: "Image",
           text: imageUrl,
         };
@@ -341,7 +407,7 @@ const Footer = () => {
           avatar: user_avatar,
           from: user_id,
           to: current_conversation.user_id,
-          time: time,
+          time: currentDateTime,
           type: "Document",
           text: fileUrl,
         };
@@ -414,7 +480,7 @@ const Footer = () => {
         from: user_id,
         to: current_conversation.user_id,
         text: messageContent,
-        time: time,
+        time: currentDateTime,
         type: type,
         avatar: user_avatar,
       };
@@ -448,7 +514,7 @@ const Footer = () => {
       from: user_id,
       to: current_conversation.user_id,
       text: audioUrl,
-      time: time,
+      time: currentDateTime,
       type: "Voice", // Sử dụng URL của file âm thanh thay vì tên tệp
     };
 
@@ -457,12 +523,19 @@ const Footer = () => {
 
 
   return (
+    
     <Box
       sx={{
         position: "relative",
         backgroundColor: "transparent !important",
+        
+   
+
       }}
     >
+   
+    
+      
       <Box
         p={isMobile ? 1 : 2}
         width={"100%"}
@@ -474,6 +547,7 @@ const Footer = () => {
           boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.25)",
         }}
       >
+          
         <Stack direction="row" alignItems={"center"} spacing={isMobile ? 1 : 3}>
           <Stack sx={{ width: "100%" }}>
             <Box
@@ -541,6 +615,7 @@ const Footer = () => {
           accept="" // Leave empty, will be set dynamically
         />
       </Box>
+  
     </Box>
   );
 };

@@ -78,7 +78,7 @@ const DeleteButton = styled(Button)({
 });
 
 /// mai chỉnh lại requestStatus lưu vào state
-const UserElement = ({ img, firstName, lastName, online, _id, email }) => {
+const UserElement = ({ avatar, firstName, lastName, online, _id, email ,requestStatus}) => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const [isRequestSent, setIsRequestSent] = useState(false); // Lưu trữ trạng thái của nút button
@@ -90,9 +90,8 @@ const UserElement = ({ img, firstName, lastName, online, _id, email }) => {
     fontSize: '13px', // Điều chỉnh kích thước font chữ tại đây
     focus: 'none', // Loại bỏ hiệu ứng focus khi click vào button
   }
-  const requestStatus = useSelector((state) =>
-    state.app.users.find(user => user._id === _id)?.requestStatus
-  );
+  
+  // console.log("requestStatus", requestStatus);
 
   useEffect(() => {
     setIsMounted(true); // Đánh dấu component đã mounted
@@ -178,10 +177,10 @@ const UserElement = ({ img, firstName, lastName, online, _id, email }) => {
               anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
               variant="dot"
             >
-              <Avatar alt={name} src={img} />
+              <Avatar alt={name} src={avatar} />
             </StyledBadge>
           ) : (
-            <Avatar alt={name} src={img} />
+            <Avatar alt={name} src={avatar} />
           )}
           <Stack spacing={0.3}>
             <Typography variant="subtitle2">{name}</Typography>

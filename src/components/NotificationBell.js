@@ -64,7 +64,7 @@ const NotificationBell = () => {
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
     socket.emit("clear_num_noti", {user_id: user_id})
-    console.log("clear_num_noti", {user_id: user_id})
+    // console.log("clear_num_noti", {user_id: user_id})
   };
   const handleClose = () => {
 

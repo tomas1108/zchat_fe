@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
 import { Box, Badge, Stack, Avatar, Typography, IconButton } from "@mui/material";
 import { styled, useTheme, alpha } from "@mui/material/styles";
 import { useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { SelectConversation } from "../redux/slices/app";
 import { ThreeDRotation } from "@mui/icons-material";
+import { compareDateTime } from "../utils/dateTime";
 
 const truncateText = (string, n) => {
   return string?.length > n ? `${string?.slice(0, n)}...` : string;
@@ -49,7 +50,7 @@ const StyledBadgeOff = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
     backgroundColor: "#666964",
     color: theme.palette.mode === "light" ? "black" : "white",
-  
+
     boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
     "&::after": {
       position: "absolute",
@@ -58,12 +59,12 @@ const StyledBadgeOff = styled(Badge)(({ theme }) => ({
       width: "100%",
       height: "100%",
       borderRadius: "50%",
-     
+
       border: "1px solid currentColor",
       content: '""',
     },
   },
- 
+
 }));
 
 
@@ -76,7 +77,25 @@ const ChatElement = ({ img, name, msg, time, unread, online, id }) => {
   const [isHovered, setIsHovered] = useState(false);
   const theme = useTheme();
   const isOnline = online === "Online";
+  const [comparisonResult, setComparisonResult] = useState('');
+   
+  useEffect(() => {
+    const updateComparisonResult = () => {
+      const inputDateTime = time;
+      const result = compareDateTime(inputDateTime);
+      setComparisonResult(result);
+    };
 
+    updateComparisonResult();
+
+    const interval = setInterval(updateComparisonResult, 1000); // Cập nhật mỗi giây
+    return () => clearInterval(interval); // Xóa interval khi component unmount
+  }, [time]); // Thêm `time` vào mảng dependencies
+
+  useEffect(() => {
+    setComparisonResult(compareDateTime(time));
+  }, [msg, time]); // Cập nhật `comparisonResult` khi `msg` hoặc `time` thay đổi
+  
   const handleMouseEnter = () => {
     setIsHovered(true);
   };
@@ -96,6 +115,7 @@ const ChatElement = ({ img, name, msg, time, unread, online, id }) => {
       return 'transparent';
     }
   };
+
 
   return (
     <StyledChatBox
@@ -132,38 +152,39 @@ const ChatElement = ({ img, name, msg, time, unread, online, id }) => {
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
               variant="dot"
             >
-            <Avatar alt={name} src={img} />
+              <Avatar alt={name} src={img} />
             </StyledBadgeOff>
           )}
           <Stack spacing={0.3}>
             <Typography variant="subtitle2">{name}</Typography>
             {msg.includes("connected") || !msg.includes("You:") ? (
 
-              <Typography variant="subtitle2" color="text.primary" sx={{ fontSize: '11px'  }} >
+              <Typography variant="subtitle2" color="text.primary" sx={{ fontSize: '11px' }} >
                 {msg}
               </Typography>
             ) : (
 
               <Typography variant="caption" color="text.secondary" >
-                {truncateText(msg, 20)}
-         
+                              {msg.length > 25 ? `${msg.slice(0, 20)}...` : msg}
+
               </Typography>
             )}
-          </Stack>  
+          </Stack>
         </Stack>
         <Stack spacing={2} alignItems="center">
-          <Typography variant="caption" color="text.secondary">
-            {time}
+         
+          <Typography variant="caption" color="text.secondary" >
+            {comparisonResult}
           </Typography>
           <Badge className="unread-count" color="error" badgeContent={unread > 5 ? '5+' : unread} />
-            {/* Button cho tùy chọn */}
-        
+          {/* Button cho tùy chọn */}
+
         </Stack>
-        
+
       </Stack>
-      
+
     </StyledChatBox>
-    
+
   );
 };
 

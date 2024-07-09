@@ -464,7 +464,7 @@ const GroupChatFooter = () => {
         ),
         (response) => {
           if (response.success) {
-            console.log("Update message state success");
+            // console.log("Update message state success");
           } else {
             console.error("Error:", response.error);
           }

@@ -25,6 +25,7 @@ import {
   ResetCurrentMessages,
   UpdateGroupCurrentConversation,
 } from "../../redux/slices/group";
+import ScrollbarNormal from "../../components/ScrollbarNormal";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -231,7 +232,7 @@ const CreateGroupForm = ({ handleClose }) => {
           onInputChange={handleSearchChange} // Lắng nghe sự kiện thay đổi nội dung nhập
         />
 
-        <ScrollbarCustom>{renderFriendList()}</ScrollbarCustom>
+        <ScrollbarNormal>{renderFriendList()}</ScrollbarNormal>
         <Stack
           spacing={2}
           direction="row"
